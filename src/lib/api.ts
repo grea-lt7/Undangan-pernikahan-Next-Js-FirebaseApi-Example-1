@@ -17,6 +17,7 @@ import type {
   MusicSettings,
   ThemeSettings,
   GuestInvitation,
+  ShareRecord,
 } from "@/types/invitation";
 import {
   APPS_SCRIPT_URL,
@@ -565,4 +566,55 @@ export async function fetchGuest(slug: string): Promise<GuestInvitation | null> 
   );
   if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal memeriksa tamu`);
   return (await response.json()) as GuestInvitation | null;
+}
+
+export async function fetchGuestOrSharedGuest(slug: string): Promise<GuestInvitation | null> {
+  const directGuest = await fetchGuest(slug);
+  if (directGuest) return directGuest;
+
+  const guests = await fetchGuests();
+  const sharedGuest = Object.values(guests).find((guest) =>
+    Object.keys(guest.share ?? {}).some((shareSlug) => shareSlug === slug)
+  );
+
+  return sharedGuest ? { name: slug, share: sharedGuest.share } : null;
+}
+
+export async function saveShare(
+  sourceName: string,
+  recipientName: string,
+  url: string
+): Promise<void> {
+  if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
+  const sourceSlug = guestSlug(sourceName);
+  const recipientSlug = guestSlug(recipientName);
+  const response = await fetch(
+    `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/guests/${sourceSlug}/share/${recipientSlug}.json`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: recipientName.trim(), url, sharedAt: new Date().toISOString() }),
+      signal: AbortSignal.timeout(15_000),
+    }
+  );
+  if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal mencatat pembagian undangan`);
+}
+
+export async function deleteShare(sourceName: string, recipientName: string): Promise<void> {
+  if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
+  const response = await fetch(
+    `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/guests/${guestSlug(sourceName)}/share/${guestSlug(recipientName)}.json`,
+    { method: "DELETE", signal: AbortSignal.timeout(15_000) }
+  );
+  if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal menghapus riwayat pembagian`);
+}
+
+export async function fetchShare(name: string): Promise<ShareRecord | null> {
+  if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
+  const response = await fetch(
+    `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/shares/${guestSlug(name)}.json`,
+    { cache: "no-store", signal: AbortSignal.timeout(10_000) }
+  );
+  if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal memuat riwayat pembagian`);
+  return (await response.json()) as ShareRecord | null;
 }

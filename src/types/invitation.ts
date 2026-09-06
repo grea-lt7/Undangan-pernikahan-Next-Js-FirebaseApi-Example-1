@@ -72,6 +72,7 @@ export interface HeaderContent {
   prayerTranslation: string;
   footerLabel: string;
   footerShareText: string;
+  footerShareEnabled: boolean;
   footerHonorText: string;
   footerMadeWithText: string;
   footerCopyright: string;
@@ -90,6 +91,13 @@ export interface ThemeSettings {
 
 export interface GuestInvitation {
   name: string;
+  share?: Record<string, ShareRecord>;
+}
+
+export interface ShareRecord {
+  name: string;
+  url: string;
+  sharedAt: string;
 }
 
 export interface InvitationData {

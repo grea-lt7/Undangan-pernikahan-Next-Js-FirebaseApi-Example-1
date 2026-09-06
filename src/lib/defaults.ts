@@ -68,6 +68,7 @@ export const invitationData: InvitationData = {
     prayerTranslation: "",
     footerLabel: "",
     footerShareText: "",
+    footerShareEnabled: true,
     footerHonorText: "",
     footerMadeWithText: "",
     footerCopyright: "",

@@ -94,6 +94,18 @@ export default function HeaderAdminPage() {
                   </label>
                 </div>
               ))}
+              <label className="flex items-center gap-3 rounded-xl border border-[#D4AF37]/20 p-4 text-sm text-[color:var(--text-primary)]">
+                <input
+                  type="checkbox"
+                  checked={header.footerShareEnabled}
+                  onChange={(event) => {
+                    setHeader((current) => ({ ...current, footerShareEnabled: event.target.checked }));
+                    setSaved(false);
+                  }}
+                  className="h-4 w-4 accent-[#D4AF37]"
+                />
+                Tampilkan tombol Bagikan Undangan
+              </label>
               <Button type="button" onClick={save} loading={saving} className="mt-2 justify-center">
                 {saved ? <Check className="h-4 w-4" aria-hidden /> : <Save className="h-4 w-4" aria-hidden />}
                 {saved ? "Tersimpan" : "Simpan Header"}

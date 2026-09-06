@@ -14,7 +14,7 @@ import { ATTENDANCE_OPTIONS, MAX_MESSAGE_LENGTH } from "@/lib/constants";
 import type { AttendanceStatus } from "@/types/invitation";
 import { cn } from "@/lib/utils";
 import { invitationData } from "@/lib/defaults";
-import { fetchGuest, fetchHeader, fetchRsvpComments, guestSlug } from "@/lib/api";
+import { fetchGuestOrSharedGuest, fetchHeader, fetchRsvpComments, guestSlug } from "@/lib/api";
 import type { HeaderContent } from "@/types/invitation";
 import { RsvpComments } from "@/components/sections/GuestbookSection";
 
@@ -53,7 +53,7 @@ export function RsvpSection() {
     if (guestName) {
       setName(guestName);
       setNameFromUrl(true);
-      Promise.all([fetchGuest(guestSlug(guestName)), fetchRsvpComments()])
+      Promise.all([fetchGuestOrSharedGuest(guestSlug(guestName)), fetchRsvpComments()])
         .then(([guest, comments]) => {
           const allowed = Boolean(guest);
           setGuestAllowed(allowed);

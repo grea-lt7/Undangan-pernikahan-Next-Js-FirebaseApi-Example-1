@@ -10,8 +10,8 @@
       }
     },
     "music": {
-      ".read": "true",
-      ".write": "true",
+      ".read": true,
+      ".write": true,
       ".validate": "newData.hasChildren(['src', 'autoplay']) && newData.child('src').isString() && newData.child('src').val().length > 0 && newData.child('src').val().length <= 1000 && newData.child('autoplay').isBoolean()"
     },
     "theme": {
@@ -23,7 +23,12 @@
       ".read": true,
       "$guestId": {
         ".write": true,
-        ".validate": "newData.hasChildren(['name']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 80"
+        ".validate": "newData.hasChildren(['name']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 80",
+        "share": {
+          "$shareId": {
+            ".validate": "newData.hasChildren(['name', 'url', 'sharedAt']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 80 && newData.child('url').isString() && newData.child('url').val().length > 0 && newData.child('url').val().length <= 2000 && newData.child('sharedAt').isString()"
+          }
+        }
       }
     },
     "story": {
@@ -50,7 +55,14 @@
     "header": {
       ".read": true,
       ".write": true,
-      ".validate": "newData.hasChildren(['label', 'groomName', 'brideName', 'dateText', 'locationText', 'hashtag', 'prayerTitle', 'prayerArabic', 'prayerTranslation', 'footerLabel', 'footerShareText', 'footerHonorText', 'footerMadeWithText', 'footerCopyright']) && newData.child('label').isString() && newData.child('label').val().length > 0 && newData.child('label').val().length <= 80 && newData.child('groomName').isString() && newData.child('groomName').val().length > 0 && newData.child('groomName').val().length <= 120 && newData.child('brideName').isString() && newData.child('brideName').val().length > 0 && newData.child('brideName').val().length <= 120 && newData.child('dateText').isString() && newData.child('dateText').val().length > 0 && newData.child('dateText').val().length <= 100 && newData.child('locationText').isString() && newData.child('locationText').val().length > 0 && newData.child('locationText').val().length <= 240 && newData.child('hashtag').isString() && newData.child('hashtag').val().length <= 100 && newData.child('prayerTitle').isString() && newData.child('prayerTitle').val().length > 0 && newData.child('prayerTitle').val().length <= 100 && newData.child('prayerArabic').isString() && newData.child('prayerArabic').val().length > 0 && newData.child('prayerArabic').val().length <= 500 && newData.child('prayerTranslation').isString() && newData.child('prayerTranslation').val().length > 0 && newData.child('prayerTranslation').val().length <= 1000 && newData.child('footerLabel').isString() && newData.child('footerLabel').val().length > 0 && newData.child('footerLabel').val().length <= 100 && newData.child('footerShareText').isString() && newData.child('footerShareText').val().length > 0 && newData.child('footerShareText').val().length <= 300 && newData.child('footerHonorText').isString() && newData.child('footerHonorText').val().length > 0 && newData.child('footerHonorText').val().length <= 500 && newData.child('footerMadeWithText').isString() && newData.child('footerMadeWithText').val().length > 0 && newData.child('footerMadeWithText').val().length <= 200 && newData.child('footerCopyright').isString() && newData.child('footerCopyright').val().length > 0 && newData.child('footerCopyright').val().length <= 200"
+      ".validate": "newData.hasChildren(['label', 'groomName', 'brideName', 'dateText', 'locationText', 'hashtag', 'prayerTitle', 'prayerArabic', 'prayerTranslation', 'footerLabel', 'footerShareText', 'footerShareEnabled', 'footerHonorText', 'footerMadeWithText', 'footerCopyright']) && newData.child('label').isString() && newData.child('groomName').isString() && newData.child('brideName').isString() && newData.child('dateText').isString() && newData.child('locationText').isString() && newData.child('hashtag').isString() && newData.child('prayerTitle').isString() && newData.child('prayerArabic').isString() && newData.child('prayerTranslation').isString() && newData.child('footerLabel').isString() && newData.child('footerShareText').isString() && newData.child('footerShareEnabled').isBoolean() && newData.child('footerHonorText').isString() && newData.child('footerMadeWithText').isString() && newData.child('footerCopyright').isString()"
+    },
+    "shares": {
+      ".read": true,
+      "$shareId": {
+        ".write": true,
+        ".validate": "newData.hasChildren(['name', 'url', 'sharedAt']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 80 && newData.child('url').isString() && newData.child('url').val().length > 0 && newData.child('url').val().length <= 2000 && newData.child('sharedAt').isString()"
+      }
     },
     "event": {
       ".read": true,

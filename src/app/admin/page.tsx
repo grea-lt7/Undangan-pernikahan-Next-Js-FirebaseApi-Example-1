@@ -8,6 +8,8 @@ import {
   ChevronDown,
   Copy,
   Link as LinkIcon,
+  MessageCircle,
+  Share2,
   Trash2,
   UserRound,
 } from "lucide-react";
@@ -16,15 +18,15 @@ import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { Button } from "@/components/ui/Button";
 import { invitationData } from "@/lib/defaults";
 import { copyToClipboard } from "@/lib/utils";
-import { deleteGuest, fetchGuests, fetchHeader, guestSlug, saveGuest } from "@/lib/api";
-import type { HeaderContent } from "@/types/invitation";
+import { deleteGuest, deleteShare, fetchGuests, fetchHeader, guestSlug, saveGuest, saveShare } from "@/lib/api";
+import type { GuestInvitation, HeaderContent } from "@/types/invitation";
 export default function AdminPage() {
   const [name, setName] = useState("");
   const [generatedUrl, setGeneratedUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [showAdminMenu, setShowAdminMenu] = useState(false);
   const [header, setHeader] = useState<HeaderContent>(invitationData.header);
-  const [guests, setGuests] = useState<Record<string, { name: string }>>({});
+  const [guests, setGuests] = useState<Record<string, GuestInvitation>>({});
   const [guestError, setGuestError] = useState("");
   const [copiedGuest, setCopiedGuest] = useState("");
 
@@ -85,11 +87,53 @@ export default function AdminPage() {
     setTimeout(() => setCopiedGuest(""), 2200);
   }
 
+  async function copySharedLink(url: string, key: string) {
+    await copyToClipboard(url);
+    setCopiedGuest(key);
+    setTimeout(() => setCopiedGuest(""), 2200);
+  }
+
+  async function removeSharedLink(slug: string, recipientName: string) {
+    const guest = guests[slug];
+    if (!guest || !window.confirm(`Hapus riwayat share untuk "${recipientName}"?`)) return;
+
+    setGuestError("");
+    try {
+      await deleteShare(guest.name, recipientName);
+      setGuests((current) => {
+        const next = { ...current };
+        const updatedGuest = next[slug];
+        if (!updatedGuest?.share) return next;
+        const share = { ...updatedGuest.share };
+        delete share[guestSlug(recipientName)];
+        next[slug] = { ...updatedGuest, share };
+        return next;
+      });
+    } catch (error) {
+      setGuestError(error instanceof Error ? error.message : "Gagal menghapus riwayat share.");
+    }
+  }
+
+  async function shareGuestLink(slug: string, guestName: string) {
+    const url = `${window.location.origin}/${encodeURIComponent(slug)}`;
+    await saveShare(guestName, guestName, url);
+    if (navigator.share) {
+      await navigator.share({ title: "Undangan Pernikahan", text: "Undangan pernikahan untuk Anda", url });
+    } else {
+      await copyToClipboard(url);
+    }
+  }
+
   async function copyLink() {
     if (!generatedUrl) return;
     await copyToClipboard(generatedUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2200);
+  }
+
+  function shareLinkViaWhatsApp(url: string) {
+    const message = `Halo, berikut link undangan pernikahannya: ${url}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   }
 
   return (
@@ -220,26 +264,38 @@ export default function AdminPage() {
                 <p className="mt-2 break-all font-mono text-sm text-[#D4AF37]">
                   {generatedUrl}
                 </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="mt-4 w-full justify-center"
-                  onClick={copyLink}
-                  aria-label={copied ? "Link tersalin" : "Salin link undangan"}
-                >
-                  {copied ? (
-                    <>
-                      <Check className="h-4 w-4 shrink-0" aria-hidden />
-                      Link Tersalin
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-4 w-4 shrink-0" aria-hidden />
-                      Salin Link
-                    </>
-                  )}
-                </Button>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-center"
+                    onClick={copyLink}
+                    aria-label={copied ? "Link tersalin" : "Salin link undangan"}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="h-4 w-4 shrink-0" aria-hidden />
+                        Link Tersalin
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4 shrink-0" aria-hidden />
+                        Salin Link
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="w-full justify-center bg-[#25D366] text-white hover:bg-[#20bd5a]"
+                    onClick={() => shareLinkViaWhatsApp(generatedUrl)}
+                    aria-label="Bagikan link melalui WhatsApp"
+                  >
+                    <MessageCircle className="h-4 w-4 shrink-0" aria-hidden />
+                    WhatsApp
+                  </Button>
+                </div>
               </div>
             )}
             {guestError && <p className="mt-4 rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-400">{guestError}</p>}
@@ -249,23 +305,61 @@ export default function AdminPage() {
                 {Object.entries(guests).length === 0 ? (
                   <p className="text-sm text-[color:var(--text-muted)]">Belum ada tamu tersimpan.</p>
                 ) : Object.entries(guests).map(([slug, guest]) => (
-                  <div key={slug} className="flex items-center gap-3 rounded-xl border border-[#D4AF37]/15 px-3 py-2">
-                    <span className="min-w-0 flex-1 truncate text-sm text-[color:var(--text-primary)]">{guest.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => copyGuestLink(slug)}
-                      className="rounded-lg p-2 text-[#D4AF37] hover:bg-[#D4AF37]/10"
-                      aria-label={`Salin link ${guest.name}`}
-                    >
-                      {copiedGuest === slug ? (
-                        <Check className="h-4 w-4" aria-hidden />
-                      ) : (
-                        <LinkIcon className="h-4 w-4" aria-hidden />
-                      )}
-                    </button>
-                    <button type="button" onClick={() => removeGuest(slug)} className="rounded-lg p-2 text-red-400 hover:bg-red-500/10" aria-label={`Hapus tamu ${guest.name}`}>
-                      <Trash2 className="h-4 w-4" aria-hidden />
-                    </button>
+                  <div key={slug} className="rounded-xl border border-[#D4AF37]/15 px-3 py-2">
+                    <div className="flex items-center gap-3">
+                      <span className="min-w-0 flex-1 truncate text-sm text-[color:var(--text-primary)]">{guest.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => copyGuestLink(slug)}
+                        className="rounded-lg p-2 text-[#D4AF37] hover:bg-[#D4AF37]/10"
+                        aria-label={`Salin link ${guest.name}`}
+                      >
+                        {copiedGuest === slug ? <Check className="h-4 w-4" aria-hidden /> : <LinkIcon className="h-4 w-4" aria-hidden />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          shareGuestLink(slug, guest.name).catch((error) =>
+                            setGuestError(error instanceof Error ? error.message : "Gagal membagikan link.")
+                          )
+                        }
+                        className="rounded-lg p-2 text-[#D4AF37] hover:bg-[#D4AF37]/10"
+                        aria-label={`Bagikan link ${guest.name}`}
+                      >
+                        <Share2 className="h-4 w-4" aria-hidden />
+                      </button>
+                      <button type="button" onClick={() => removeGuest(slug)} className="rounded-lg p-2 text-red-400 hover:bg-red-500/10" aria-label={`Hapus tamu ${guest.name}`}>
+                        <Trash2 className="h-4 w-4" aria-hidden />
+                      </button>
+                    </div>
+                    {guest.share && Object.keys(guest.share).length > 0 && (
+                      <div className="mt-3 border-t border-[#D4AF37]/10 pt-3">
+                        <p className="text-xs text-[color:var(--text-muted)]">Pernah membagikan kepada:</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {Object.entries(guest.share).map(([shareSlug, share]) => (
+                            <span key={shareSlug} className="inline-flex items-center gap-1 rounded-full bg-[#D4AF37]/10 pl-3 pr-1 py-1 text-xs text-[#D4AF37]">
+                              <button
+                                type="button"
+                                onClick={() => copySharedLink(share.url, `share-${slug}-${shareSlug}`)}
+                                className="inline-flex items-center gap-1 hover:text-[#F1D77A]"
+                                aria-label={`Salin link ${share.name}`}
+                              >
+                                {share.name}
+                                {copiedGuest === `share-${slug}-${shareSlug}` ? <Check className="h-3 w-3" aria-hidden /> : <LinkIcon className="h-3 w-3" aria-hidden />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeSharedLink(slug, share.name)}
+                                className="rounded-full p-1 text-red-400 hover:bg-red-500/10"
+                                aria-label={`Hapus riwayat share ${share.name}`}
+                              >
+                                <Trash2 className="h-3 w-3" aria-hidden />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

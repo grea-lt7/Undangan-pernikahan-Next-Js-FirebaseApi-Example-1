@@ -10,7 +10,7 @@ import { invitationData } from "@/lib/defaults";
 import { fetchHeader, updateHeader } from "@/lib/api";
 import type { HeaderContent } from "@/types/invitation";
 
-const fields: Array<[keyof HeaderContent, string]> = [
+const fields: Array<[Exclude<keyof HeaderContent, "footerShareEnabled">, string]> = [
   ["label", "Label atas"],
   ["groomName", "Nama mempelai pria"],
   ["brideName", "Nama mempelai wanita"],

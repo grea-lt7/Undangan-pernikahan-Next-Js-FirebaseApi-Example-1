@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useEffect, useMemo, useState } from "react";
 import { Reveal } from "@/components/motion/Reveal";
-import { invitationData } from "@/data/invitation";
+import { invitationData } from "@/lib/defaults";
 import { fetchHeader } from "@/lib/api";
 import type { HeaderContent } from "@/types/invitation";
 

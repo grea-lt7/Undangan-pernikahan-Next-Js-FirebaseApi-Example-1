@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { GoldShimmerText } from "@/components/motion/GoldShimmerText";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { AnimatedGradient } from "@/components/motion/AnimatedGradient";
-import { invitationData } from "@/data/invitation";
+import { invitationData } from "@/lib/defaults";
 import { fetchHeader } from "@/lib/api";
 import type { HeaderContent } from "@/types/invitation";
 

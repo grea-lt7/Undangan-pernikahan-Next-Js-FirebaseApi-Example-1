@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, Music2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fetchMusic } from "@/lib/api";
-import { invitationData } from "@/data/invitation";
 
 interface MusicPlayerProps {
   src?: string;
@@ -13,12 +12,13 @@ interface MusicPlayerProps {
 }
 
 export function MusicPlayer({
-  src = invitationData.music.src,
+  src,
   className,
 }: MusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [ready, setReady] = useState(false);
+  const [musicSrc, setMusicSrc] = useState(src ?? "");
   const [autoplay, setAutoplay] = useState(false);
 
   useEffect(() => {
@@ -26,10 +26,7 @@ export function MusicPlayer({
       .then((settings) => {
         if (settings) {
           setAutoplay(settings.autoplay);
-          if (settings.src) {
-            const audio = audioRef.current;
-            if (audio) audio.src = settings.src;
-          }
+          if (settings.src) setMusicSrc(settings.src);
         }
       })
       .catch((error) => console.error("Gagal memuat pengaturan musik:", error));
@@ -79,7 +76,7 @@ export function MusicPlayer({
 
   return (
     <>
-      <audio ref={audioRef} src={src} preload="metadata" aria-hidden />
+      {musicSrc && <audio ref={audioRef} src={musicSrc} preload="metadata" aria-hidden />}
       <motion.button
         onClick={togglePlay}
         className={cn(
@@ -91,6 +88,7 @@ export function MusicPlayer({
           className
         )}
         aria-label={playing ? "Pause musik" : "Putar musik latar"}
+        disabled={!ready}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.93 }}
         transition={{ duration: 0.15 }}

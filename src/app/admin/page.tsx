@@ -14,7 +14,7 @@ import {
 import { AnimatedGradient } from "@/components/motion/AnimatedGradient";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { Button } from "@/components/ui/Button";
-import { invitationData } from "@/data/invitation";
+import { invitationData } from "@/lib/defaults";
 import { copyToClipboard } from "@/lib/utils";
 import { deleteGuest, fetchGuests, fetchHeader, guestSlug, saveGuest } from "@/lib/api";
 import type { HeaderContent } from "@/types/invitation";

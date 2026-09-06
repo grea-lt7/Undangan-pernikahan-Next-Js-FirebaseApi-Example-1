@@ -6,7 +6,7 @@ import { ArrowLeft, Check, Save } from "lucide-react";
 import { AnimatedGradient } from "@/components/motion/AnimatedGradient";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { Button } from "@/components/ui/Button";
-import { invitationData } from "@/data/invitation";
+import { invitationData } from "@/lib/defaults";
 import { fetchHeader, updateHeader } from "@/lib/api";
 import type { HeaderContent } from "@/types/invitation";
 

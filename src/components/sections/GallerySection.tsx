@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ZoomIn } from "lucide-react";
 import { Reveal } from "@/components/motion/Reveal";
-import { invitationData } from "@/data/invitation";
+import { invitationData } from "@/lib/defaults";
 import type { GalleryImage } from "@/types/invitation";
 import { fetchGallery } from "@/lib/api";
 import { normalizeGalleryUrl } from "@/lib/gallery";

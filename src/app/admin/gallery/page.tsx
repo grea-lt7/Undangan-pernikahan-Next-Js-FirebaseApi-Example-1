@@ -6,7 +6,7 @@ import { ArrowLeft, Check, Plus, Save, Trash2 } from "lucide-react";
 import { AnimatedGradient } from "@/components/motion/AnimatedGradient";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { Button } from "@/components/ui/Button";
-import { invitationData } from "@/data/invitation";
+import { invitationData } from "@/lib/defaults";
 import { fetchGallery, updateGallery } from "@/lib/api";
 import { normalizeGalleryUrl } from "@/lib/gallery";
 import type { GalleryImage } from "@/types/invitation";

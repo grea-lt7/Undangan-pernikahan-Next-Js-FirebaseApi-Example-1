@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Reveal } from "@/components/motion/Reveal";
 import { AnimatedGradient } from "@/components/motion/AnimatedGradient";
 import type { EventDetail } from "@/types/invitation";
-import { invitationData } from "@/data/invitation";
+import { invitationData } from "@/lib/defaults";
 import { fetchEvent } from "@/lib/api";
 
 interface EventCardProps {

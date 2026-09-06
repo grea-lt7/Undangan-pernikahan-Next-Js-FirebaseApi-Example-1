@@ -4,7 +4,7 @@ export const FIREBASE_DATABASE_URL =
   process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ?? "";
 
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://arga-nimas.vercel.app";
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://Andi-Siti.vercel.app";
 
 export const RSVP_COOLDOWN_MS = 30_000;
 export const GUESTBOOK_COOLDOWN_MS = 15_000;

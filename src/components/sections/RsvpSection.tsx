@@ -13,7 +13,7 @@ import { rsvpSchema } from "@/lib/validators";
 import { ATTENDANCE_OPTIONS, MAX_MESSAGE_LENGTH } from "@/lib/constants";
 import type { AttendanceStatus } from "@/types/invitation";
 import { cn } from "@/lib/utils";
-import { invitationData } from "@/data/invitation";
+import { invitationData } from "@/lib/defaults";
 import { fetchGuest, fetchHeader, guestSlug } from "@/lib/api";
 import type { HeaderContent } from "@/types/invitation";
 

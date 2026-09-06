@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
 import { GoldShimmerText } from "@/components/motion/GoldShimmerText";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
-import { invitationData } from "@/data/invitation";
+import { invitationData } from "@/lib/defaults";
 import { fetchHeader } from "@/lib/api";
 import type { HeaderContent } from "@/types/invitation";
 

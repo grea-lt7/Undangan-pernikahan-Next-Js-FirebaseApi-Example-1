@@ -22,19 +22,17 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Pernikahan Andi Jamaludin & Siti Purijat",
   description:
-    "Dengan penuh kebahagiaan, kami mengundang Anda untuk menyaksikan dan memberikan doa restu atas pernikahan Andi Jamaludin &  Siti Purijat pada Sabtu, 20 Desember 2026 di Grand Ballroom Nusantara, Yogyakarta.",
+    "Dengan penuh kebahagiaan, kami mengundang Anda untuk menyaksikan dan memberikan doa restu atas pernikahan Andi Jamaludin &  Siti Purijat",
   keywords: [
     "pernikahan",
     "wedding",
     "Andi Jamaludin",
     " Siti Purijat",
     "undangan digital",
-    "Yogyakarta",
-    "2026",
     "#AndiJamaludin2026",
   ],
-  authors: [{ name: "Arga & Nimas" }],
-  creator: "Arga & Nimas",
+  authors: [{ name: "Andi & Siti" }],
+  creator: "Andi & Siti",
   metadataBase: new URL(SITE_URL),
   alternates: {
     canonical: SITE_URL,
@@ -53,10 +51,10 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: SITE_URL,
-    title: "Pernikahan Arga & Nimas — 20 Desember 2026",
+    title: "Pernikahan Andi & Siti — ",
     description:
-      "Kami mengundang Anda untuk menyaksikan dan memberikan doa restu atas pernikahan kami. Sabtu, 20 Desember 2026, Grand Ballroom Nusantara, Yogyakarta.",
-    siteName: "Undangan Pernikahan Arga & Nimas",
+      "Kami mengundang Anda untuk menyaksikan dan memberikan doa restu atas pernikahan kami. ",
+    siteName: "Undangan Pernikahan Andi & Siti",
     locale: "id_ID",
     images: [
       {
@@ -69,9 +67,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pernikahan Arga & Nimas — 20 Desember 2026",
+    title: "Pernikahan Andi & Siti — ",
     description:
-      "Kami mengundang Anda untuk menyaksikan momen bahagia kami. Sabtu, 20 Desember 2026, Yogyakarta.",
+      "Kami mengundang Anda untuk menyaksikan momen bahagia kami.",
     images: [`${SITE_URL}/images/og-image.png`],
   },
 };

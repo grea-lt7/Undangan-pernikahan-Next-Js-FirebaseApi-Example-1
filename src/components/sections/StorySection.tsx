@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Reveal } from "@/components/motion/Reveal";
 import { AnimatedGradient } from "@/components/motion/AnimatedGradient";
-import { invitationData } from "@/data/invitation";
 import type { StoryItem } from "@/types/invitation";
 import { fetchStory, fetchStoryVisibility } from "@/lib/api";
 
@@ -100,21 +99,24 @@ function StoryCard({ item, index, isLeft }: StoryCardProps) {
 }
 
 export function StorySection() {
-  const [story, setStory] = useState<StoryItem[]>(invitationData.story);
+  const [story, setStory] = useState<StoryItem[]>([]);
   const [visible, setVisible] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([fetchStory(), fetchStoryVisibility()])
       .then(([remoteStory, remoteVisible]) => {
-        if (remoteStory?.length) setStory(remoteStory);
+        setStory(remoteStory ?? []);
         setVisible(remoteVisible);
       })
       .catch((error) => {
         console.error("Gagal memuat cerita dari Firebase:", error);
-      });
+        setStory([]);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  if (!visible) return null;
+  if (loading || !visible || story.length === 0) return null;
 
   return (
     <section

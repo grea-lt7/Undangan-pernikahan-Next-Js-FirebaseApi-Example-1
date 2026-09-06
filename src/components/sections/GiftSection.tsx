@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Copy, Check, Gift } from "lucide-react";
 import { Reveal } from "@/components/motion/Reveal";
-import { invitationData } from "@/data/invitation";
+import { invitationData } from "@/lib/defaults";
 import { copyToClipboard } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { fetchGift } from "@/lib/api";

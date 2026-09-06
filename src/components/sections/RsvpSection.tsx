@@ -14,8 +14,9 @@ import { ATTENDANCE_OPTIONS, MAX_MESSAGE_LENGTH } from "@/lib/constants";
 import type { AttendanceStatus } from "@/types/invitation";
 import { cn } from "@/lib/utils";
 import { invitationData } from "@/lib/defaults";
-import { fetchGuest, fetchHeader, guestSlug } from "@/lib/api";
+import { fetchGuest, fetchHeader, fetchRsvpComments, guestSlug } from "@/lib/api";
 import type { HeaderContent } from "@/types/invitation";
+import { RsvpComments } from "@/components/sections/GuestbookSection";
 
 interface FormErrors {
   name?: string;
@@ -35,6 +36,7 @@ export function RsvpSection() {
   const [header, setHeader] = useState<HeaderContent>(invitationData.header);
   const [guestAllowed, setGuestAllowed] = useState(false);
   const [guestCheckLoading, setGuestCheckLoading] = useState(true);
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
 
   useEffect(() => {
     const pathName = window.location.pathname.split("/").filter(Boolean)[0] ?? "";
@@ -51,8 +53,18 @@ export function RsvpSection() {
     if (guestName) {
       setName(guestName);
       setNameFromUrl(true);
-      fetchGuest(guestSlug(guestName))
-        .then((guest) => setGuestAllowed(Boolean(guest)))
+      Promise.all([fetchGuest(guestSlug(guestName)), fetchRsvpComments()])
+        .then(([guest, comments]) => {
+          const allowed = Boolean(guest);
+          setGuestAllowed(allowed);
+          setAlreadySubmitted(
+            allowed &&
+              comments.some(
+                (comment) =>
+                  comment.name.trim().toLowerCase() === guestName.toLowerCase()
+              )
+          );
+        })
         .catch((error) => console.error("Gagal memeriksa akses tamu RSVP:", error))
         .finally(() => setGuestCheckLoading(false));
     } else {
@@ -70,6 +82,7 @@ export function RsvpSection() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (alreadySubmitted) return;
     setErrors({});
 
     const parsed = rsvpSchema.safeParse({ name, attendance, guestCount, message });
@@ -125,7 +138,7 @@ export function RsvpSection() {
         <Reveal delay={0.1} direction="up">
           <div className="card-glass rounded-3xl p-8 border border-[#D4AF37]/15 shadow-[0_4px_32px_rgba(212,175,55,0.08)]">
             <AnimatePresence mode="wait">
-              {state.status === "success" ? (
+              {state.status === "success" || alreadySubmitted ? (
                 <motion.div
                   key="success"
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -156,9 +169,9 @@ export function RsvpSection() {
                       menantikan kehadiran Anda.
                     </p>
                   </div>
-                  <Button variant="outline" size="sm" onClick={handleReset}>
-                    Kirim Ulang
-                  </Button>
+                  <p className="text-xs text-[color:var(--text-muted)]">
+                    Link undangan ini hanya dapat mengirim satu konfirmasi.
+                  </p>
                 </motion.div>
               ) : guestCheckLoading ? (
                 <p className="py-8 text-center text-sm text-[color:var(--text-muted)]">Memeriksa akses tamu...</p>
@@ -322,6 +335,7 @@ export function RsvpSection() {
           </div>
         </Reveal>
 
+        <RsvpComments />
       </div>
     </section>
   );

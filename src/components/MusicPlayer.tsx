@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, Music2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fetchMusic } from "@/lib/api";
+import { normalizeAudioUrl } from "@/lib/gallery";
 
 interface MusicPlayerProps {
   src?: string;
@@ -17,8 +18,7 @@ export function MusicPlayer({
 }: MusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
-  const [ready, setReady] = useState(false);
-  const [musicSrc, setMusicSrc] = useState(src ?? "");
+  const [musicSrc, setMusicSrc] = useState(() => (src ? normalizeAudioUrl(src) : ""));
   const [autoplay, setAutoplay] = useState(false);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export function MusicPlayer({
       .then((settings) => {
         if (settings) {
           setAutoplay(settings.autoplay);
-          if (settings.src) setMusicSrc(settings.src);
+          if (settings.src) setMusicSrc(normalizeAudioUrl(settings.src));
         }
       })
       .catch((error) => console.error("Gagal memuat pengaturan musik:", error));
@@ -36,10 +36,8 @@ export function MusicPlayer({
     const audio = audioRef.current;
     if (!audio) return;
 
-    const onCanPlay = () => setReady(true);
     const onEnded = () => setPlaying(false);
 
-    audio.addEventListener("canplaythrough", onCanPlay);
     audio.addEventListener("ended", onEnded);
     const tryAutoplay = () => {
       if (!autoplay) return;
@@ -49,7 +47,6 @@ export function MusicPlayer({
     };
     audio.addEventListener("canplaythrough", tryAutoplay);
     return () => {
-      audio.removeEventListener("canplaythrough", onCanPlay);
       audio.removeEventListener("ended", onEnded);
       audio.removeEventListener("canplaythrough", tryAutoplay);
     };
@@ -76,7 +73,16 @@ export function MusicPlayer({
 
   return (
     <>
-      {musicSrc && <audio ref={audioRef} src={musicSrc} preload="metadata" aria-hidden />}
+      {musicSrc && (
+        <audio
+          key={musicSrc}
+          ref={audioRef}
+          src={musicSrc}
+          preload="auto"
+          aria-hidden
+          onError={() => setPlaying(false)}
+        />
+      )}
       <motion.button
         onClick={togglePlay}
         className={cn(
@@ -88,7 +94,6 @@ export function MusicPlayer({
           className
         )}
         aria-label={playing ? "Pause musik" : "Putar musik latar"}
-        disabled={!ready}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.93 }}
         transition={{ duration: 0.15 }}

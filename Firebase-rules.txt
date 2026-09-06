@@ -1,0 +1,84 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "adminAuth": {
+      "passwordHash": {
+        ".read": true,
+        ".write": true,
+        ".validate": "newData.isString() && newData.val().length == 64"
+      }
+    },
+    "music": {
+      ".read": "true",
+      ".write": "true",
+      ".validate": "newData.hasChildren(['src', 'autoplay']) && newData.child('src').isString() && newData.child('src').val().length > 0 && newData.child('src').val().length <= 1000 && newData.child('autoplay').isBoolean()"
+    },
+    "theme": {
+      ".read": true,
+      ".write": true,
+      ".validate": "newData.hasChildren(['mode']) && (newData.child('mode').val() == 'light' || newData.child('mode').val() == 'dark' || newData.child('mode').val() == 'system')"
+    },
+    "guests": {
+      ".read": true,
+      "$guestId": {
+        ".write": true,
+        ".validate": "newData.hasChildren(['name']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 80"
+      }
+    },
+    "story": {
+      ".read": true,
+      ".write": true,
+      ".validate": "newData.hasChildren()",
+      "$storyId": {
+        ".validate": "newData.hasChildren(['year', 'title', 'description']) && newData.child('year').isString() && newData.child('year').val().length > 0 && newData.child('year').val().length <= 20 && newData.child('title').isString() && newData.child('title').val().length > 0 && newData.child('title').val().length <= 120 && newData.child('description').isString() && newData.child('description').val().length > 0 && newData.child('description').val().length <= 1000"
+      }
+    },
+    "storyVisibility": {
+      ".read": true,
+      ".write": true,
+      ".validate": "newData.isBoolean()"
+    },
+    "gallery": {
+      ".read": true,
+      ".write": true,
+      ".validate": "newData.hasChildren()",
+      "$galleryId": {
+        ".validate": "newData.hasChildren(['src', 'alt', 'width', 'height']) && newData.child('src').isString() && newData.child('src').val().length > 0 && newData.child('src').val().length <= 1000 && newData.child('alt').isString() && newData.child('alt').val().length > 0 && newData.child('alt').val().length <= 160 && newData.child('width').isNumber() && newData.child('width').val() > 0 && newData.child('height').isNumber() && newData.child('height').val() > 0"
+      }
+    },
+    "header": {
+      ".read": true,
+      ".write": true,
+      ".validate": "newData.hasChildren(['label', 'groomName', 'brideName', 'dateText', 'locationText', 'hashtag', 'prayerTitle', 'prayerArabic', 'prayerTranslation', 'footerLabel', 'footerShareText', 'footerHonorText', 'footerMadeWithText', 'footerCopyright']) && newData.child('label').isString() && newData.child('label').val().length > 0 && newData.child('label').val().length <= 80 && newData.child('groomName').isString() && newData.child('groomName').val().length > 0 && newData.child('groomName').val().length <= 120 && newData.child('brideName').isString() && newData.child('brideName').val().length > 0 && newData.child('brideName').val().length <= 120 && newData.child('dateText').isString() && newData.child('dateText').val().length > 0 && newData.child('dateText').val().length <= 100 && newData.child('locationText').isString() && newData.child('locationText').val().length > 0 && newData.child('locationText').val().length <= 240 && newData.child('hashtag').isString() && newData.child('hashtag').val().length <= 100 && newData.child('prayerTitle').isString() && newData.child('prayerTitle').val().length > 0 && newData.child('prayerTitle').val().length <= 100 && newData.child('prayerArabic').isString() && newData.child('prayerArabic').val().length > 0 && newData.child('prayerArabic').val().length <= 500 && newData.child('prayerTranslation').isString() && newData.child('prayerTranslation').val().length > 0 && newData.child('prayerTranslation').val().length <= 1000 && newData.child('footerLabel').isString() && newData.child('footerLabel').val().length > 0 && newData.child('footerLabel').val().length <= 100 && newData.child('footerShareText').isString() && newData.child('footerShareText').val().length > 0 && newData.child('footerShareText').val().length <= 300 && newData.child('footerHonorText').isString() && newData.child('footerHonorText').val().length > 0 && newData.child('footerHonorText').val().length <= 500 && newData.child('footerMadeWithText').isString() && newData.child('footerMadeWithText').val().length > 0 && newData.child('footerMadeWithText').val().length <= 200 && newData.child('footerCopyright').isString() && newData.child('footerCopyright').val().length > 0 && newData.child('footerCopyright').val().length <= 200"
+    },
+    "event": {
+      ".read": true,
+      ".write": true,
+      ".validate": "newData.hasChildren(['name', 'date', 'day', 'lunarDate', 'time', 'venue', 'address', 'city', 'mapsUrl', 'mapsLabel']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 120 && newData.child('date').isString() && newData.child('date').val().length > 0 && newData.child('date').val().length <= 20 && newData.child('day').isString() && newData.child('day').val().length > 0 && newData.child('day').val().length <= 30 && newData.child('lunarDate').isString() && newData.child('lunarDate').val().length <= 80 && newData.child('time').isString() && newData.child('time').val().length > 0 && newData.child('time').val().length <= 80 && newData.child('venue').isString() && newData.child('venue').val().length > 0 && newData.child('venue').val().length <= 160 && newData.child('address').isString() && newData.child('address').val().length > 0 && newData.child('address').val().length <= 240 && newData.child('city').isString() && newData.child('city').val().length > 0 && newData.child('city').val().length <= 160 && newData.child('mapsUrl').isString() && newData.child('mapsUrl').val().length > 0 && newData.child('mapsUrl').val().length <= 1000 && newData.child('mapsLabel').isString() && newData.child('mapsLabel').val().length > 0 && newData.child('mapsLabel').val().length <= 200"
+    },
+    "gift": {
+      ".read": true,
+      ".write": true,
+      ".validate": "newData.hasChildren(['sectionLabel', 'title', 'description', 'accounts', 'address', 'thankYou', 'closingArabic']) && newData.child('sectionLabel').isString() && newData.child('sectionLabel').val().length > 0 && newData.child('sectionLabel').val().length <= 80 && newData.child('title').isString() && newData.child('title').val().length > 0 && newData.child('title').val().length <= 120 && newData.child('description').isString() && newData.child('description').val().length > 0 && newData.child('description').val().length <= 1000 && newData.child('accounts').hasChildren() && newData.child('address').isString() && newData.child('address').val().length > 0 && newData.child('address').val().length <= 240 && newData.child('thankYou').isString() && newData.child('thankYou').val().length <= 300 && newData.child('closingArabic').isString() && newData.child('closingArabic').val().length <= 500",
+      "accounts": {
+        "$accountId": {
+          ".validate": "newData.hasChildren(['label', 'holder', 'number']) && newData.child('label').isString() && newData.child('label').val().length > 0 && newData.child('label').val().length <= 100 && newData.child('holder').isString() && newData.child('holder').val().length > 0 && newData.child('holder').val().length <= 120 && newData.child('number').isString() && newData.child('number').val().length > 0 && newData.child('number').val().length <= 60"
+        }
+      }
+    },
+    "rsvps": {
+      ".read": true,
+      "$rsvpId": {
+        ".write": "!data.exists() || newData.val() == null || (data.exists() && newData.child('name').val() == data.child('name').val())",
+        ".validate": "newData.hasChildren(['action', 'name', 'attendance', 'guestCount', 'message', 'createdAt']) && newData.child('action').val() == 'rsvp' && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 80 && (newData.child('attendance').val() == 'attending' || newData.child('attendance').val() == 'not_attending' || newData.child('attendance').val() == 'maybe') && newData.child('guestCount').isNumber() && newData.child('guestCount').val() >= 1 && newData.child('guestCount').val() <= 5 && newData.child('message').isString() && newData.child('message').val().length > 0 && newData.child('message').val().length <= 500 && newData.child('createdAt').isString()",
+        "replies": {
+          "$replyId": {
+            ".write": "!data.exists() || newData.val() == null || (data.exists() && newData.child('name').val() == data.child('name').val())",
+            ".validate": "newData.hasChildren(['action', 'name', 'message', 'createdAt']) && newData.child('action').val() == 'reply' && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 80 && newData.child('message').isString() && newData.child('message').val().length > 0 && newData.child('message').val().length <= 500 && newData.child('createdAt').isString()"
+          }
+        }
+      }
+    }
+  } 
+}

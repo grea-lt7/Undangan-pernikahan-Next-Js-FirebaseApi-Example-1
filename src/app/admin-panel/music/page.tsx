@@ -44,7 +44,7 @@ export default function MusicAdminPage() {
       <AnimatedGradient className="z-0" />
       <FloatingParticles count={16} className="z-0" />
       <section className="relative z-10 mx-auto max-w-3xl">
-        <Link href="/admin" className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-[color:var(--text-secondary)] hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]">
+        <Link href="/admin-panel" className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-[color:var(--text-secondary)] hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]">
           <ArrowLeft className="h-4 w-4" aria-hidden /> Kembali ke Admin
         </Link>
         <div className="mb-8 mt-8">

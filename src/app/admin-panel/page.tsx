@@ -175,14 +175,14 @@ export default function AdminPage() {
             }`}
           >
             {[
-              ["/admin/header", "Edit Header Undangan"],
-              ["/admin/event", "Edit Informasi Acara"],
-              ["/admin/gallery", "Edit Galeri Foto"],
-              ["/admin/story", "Edit Cerita Cinta"],
-              ["/admin/gift", "Edit Wedding Gift"],
-              ["/admin/rsvp", "Komentar RSVP"],
-              ["/admin/music", "Edit Musik"],
-              ["/admin/theme", "Edit Tema"],
+              ["/admin-panel/header", "Edit Header Undangan"],
+              ["/admin-panel/event", "Edit Informasi Acara"],
+              ["/admin-panel/gallery", "Edit Galeri Foto"],
+              ["/admin-panel/story", "Edit Cerita Cinta"],
+              ["/admin-panel/gift", "Edit Wedding Gift"],
+              ["/admin-panel/rsvp", "Komentar RSVP"],
+              ["/admin-panel/music", "Edit Musik"],
+              ["/admin-panel/theme", "Edit Tema"],
             ].map(([href, label]) => (
               <Link
                 key={href}

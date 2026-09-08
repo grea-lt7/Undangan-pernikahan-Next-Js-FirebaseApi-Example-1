@@ -16,13 +16,15 @@ interface LightboxProps {
 }
 
 function Lightbox({ image, onClose }: LightboxProps) {
+  const aspectRatio = image.width && image.height ? `${image.width} / ${image.height}` : "4 / 3";
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-3 sm:p-4"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -33,22 +35,25 @@ function Lightbox({ image, onClose }: LightboxProps) {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.85, opacity: 0 }}
         transition={{ duration: 0.35, ease: [0.19, 1, 0.22, 1] }}
-        className="relative max-h-[90vh] max-w-3xl w-full overflow-hidden rounded-3xl"
+        className="relative max-h-[90vh] max-w-[90vw] overflow-hidden rounded-3xl bg-black/40 shadow-[0_18px_70px_rgba(0,0,0,0.5)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative aspect-[4/3] w-full">
+        <div
+          className="relative max-h-[90vh] w-auto max-w-[90vw]"
+          style={{ aspectRatio }}
+        >
           <Image
             src={image.src}
             alt={image.alt}
             fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 80vw"
+            className="object-contain"
+            sizes="(max-width: 768px) 90vw, 80vw"
             priority
           />
         </div>
         <button
           onClick={onClose}
-          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-sm hover:bg-black/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-sm transition-colors hover:bg-black/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           aria-label="Tutup lightbox"
         >
           <X className="h-4 w-4" />

@@ -11,6 +11,31 @@ import { fetchGallery, updateGallery } from "@/lib/api";
 import { normalizeGalleryUrl } from "@/lib/gallery";
 import type { GalleryImage } from "@/types/invitation";
 
+const DEFAULT_IMAGE_DIMENSION = { width: 800, height: 600 };
+
+function getAutoImageDimensions(src: string) {
+  if (!src) {
+    return Promise.resolve(DEFAULT_IMAGE_DIMENSION);
+  }
+
+  return new Promise<{ width: number; height: number }>((resolve) => {
+    const img = new window.Image();
+
+    img.onload = () => {
+      resolve({
+        width: img.naturalWidth || img.width || DEFAULT_IMAGE_DIMENSION.width,
+        height: img.naturalHeight || img.height || DEFAULT_IMAGE_DIMENSION.height,
+      });
+    };
+
+    img.onerror = () => {
+      resolve(DEFAULT_IMAGE_DIMENSION);
+    };
+
+    img.src = src;
+  });
+}
+
 export default function GalleryAdminPage() {
   const [gallery, setGallery] = useState<GalleryImage[]>(invitationData.gallery);
   const [loading, setLoading] = useState(true);
@@ -20,12 +45,48 @@ export default function GalleryAdminPage() {
 
   useEffect(() => {
     fetchGallery()
-      .then((remoteGallery) => {
-        if (remoteGallery?.length) setGallery(remoteGallery);
+      .then(async (remoteGallery) => {
+        if (!remoteGallery?.length) {
+          setLoading(false);
+          return;
+        }
+
+        const hydratedGallery = await Promise.all(
+          remoteGallery.map(async (image) => {
+            if (image.src && (!image.width || !image.height)) {
+              const dimensions = await getAutoImageDimensions(normalizeGalleryUrl(image.src) || image.src);
+              return { ...image, ...dimensions };
+            }
+            return image;
+          })
+        );
+
+        setGallery(hydratedGallery);
       })
       .catch((err) => setError(err instanceof Error ? err.message : "Gagal memuat galeri."))
       .finally(() => setLoading(false));
   }, []);
+
+  async function syncImageDimensions(index: number, source: string) {
+    const normalizedSource = normalizeGalleryUrl(source);
+    if (!normalizedSource) {
+      setGallery((current) =>
+        current.map((item, itemIndex) =>
+          itemIndex === index ? { ...item, src: "", width: DEFAULT_IMAGE_DIMENSION.width, height: DEFAULT_IMAGE_DIMENSION.height } : item
+        )
+      );
+      return;
+    }
+
+    const dimensions = await getAutoImageDimensions(normalizedSource);
+    setGallery((current) =>
+      current.map((item, itemIndex) =>
+        itemIndex === index
+          ? { ...item, src: normalizedSource, ...dimensions }
+          : item
+      )
+    );
+  }
 
   function updateItem(index: number, field: keyof GalleryImage, value: string) {
     setGallery((current) =>
@@ -35,17 +96,35 @@ export default function GalleryAdminPage() {
           : item
       )
     );
+
+    if (field === "src") {
+      void syncImageDimensions(index, value);
+    }
+
     setSaved(false);
   }
 
   async function save() {
     setSaving(true);
     setError("");
+
     try {
-      await updateGallery(
-        gallery.map((image) => ({ ...image, src: normalizeGalleryUrl(image.src) }))
+      const normalizedGallery = await Promise.all(
+        gallery.map(async (image) => {
+          const normalizedSrc = normalizeGalleryUrl(image.src);
+          const safeSrc = normalizedSrc || image.src;
+
+          if (!safeSrc) {
+            return { ...image, src: "", width: DEFAULT_IMAGE_DIMENSION.width, height: DEFAULT_IMAGE_DIMENSION.height };
+          }
+
+          const dimensions = await getAutoImageDimensions(safeSrc);
+          return { ...image, src: safeSrc, ...dimensions };
+        })
       );
-      setGallery((current) => current.map((image) => ({ ...image, src: normalizeGalleryUrl(image.src) })));
+
+      await updateGallery(normalizedGallery);
+      setGallery(normalizedGallery);
       setSaved(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal menyimpan galeri.");
@@ -82,14 +161,13 @@ export default function GalleryAdminPage() {
                 </div>
                 <input value={image.src} onChange={(event) => updateItem(index, "src", event.target.value)} placeholder="https://drive.google.com/file/d/..." className="mt-4 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm text-[color:var(--text-primary)]" />
                 <input value={image.alt} onChange={(event) => updateItem(index, "alt", event.target.value)} placeholder="Deskripsi foto" className="mt-3 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm text-[color:var(--text-primary)]" />
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                  <input type="number" min="1" value={image.width} onChange={(event) => updateItem(index, "width", event.target.value)} placeholder="Lebar" className="rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm text-[color:var(--text-primary)]" />
-                  <input type="number" min="1" value={image.height} onChange={(event) => updateItem(index, "height", event.target.value)} placeholder="Tinggi" className="rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm text-[color:var(--text-primary)]" />
+                <div className="mt-3 rounded-xl border border-[#D4AF37]/20 bg-[#D4AF37]/5 px-4 py-3 text-sm text-[color:var(--text-secondary)]">
+                  Ukuran otomatis: {image.width > 0 && image.height > 0 ? `${image.width} × ${image.height}` : "Sedang mendeteksi..."}
                 </div>
               </article>
             ))}
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button type="button" variant="outline" onClick={() => setGallery((current) => [...current, { src: "", alt: "", width: 800, height: 600 }])} className="flex-1 justify-center">
+              <Button type="button" variant="outline" onClick={() => setGallery((current) => [...current, { src: "", alt: "", width: DEFAULT_IMAGE_DIMENSION.width, height: DEFAULT_IMAGE_DIMENSION.height }])} className="flex-1 justify-center">
                 <Plus className="h-4 w-4" aria-hidden /> Tambah Foto
               </Button>
               <Button type="button" onClick={save} loading={saving} className="flex-1 justify-center">

@@ -16,7 +16,9 @@ interface LightboxProps {
 }
 
 function Lightbox({ image, onClose }: LightboxProps) {
-  const aspectRatio = image.width && image.height ? `${image.width} / ${image.height}` : "4 / 3";
+  const width = Math.max(image.width || 800, 1);
+  const height = Math.max(image.height || 600, 1);
+  const maxWidth = "min(90vw, 1200px)";
 
   return (
     <motion.div
@@ -35,18 +37,24 @@ function Lightbox({ image, onClose }: LightboxProps) {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.85, opacity: 0 }}
         transition={{ duration: 0.35, ease: [0.19, 1, 0.22, 1] }}
-        className="relative max-h-[90vh] max-w-[90vw] overflow-hidden rounded-3xl bg-black/40 shadow-[0_18px_70px_rgba(0,0,0,0.5)]"
+        className="relative overflow-hidden rounded-3xl bg-black/40 shadow-[0_18px_70px_rgba(0,0,0,0.5)]"
+        style={{ maxWidth, maxHeight: "90vh" }}
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="relative max-h-[90vh] w-auto max-w-[90vw]"
-          style={{ aspectRatio }}
+          className="relative"
+          style={{
+            width: maxWidth,
+            aspectRatio: `${width} / ${height}`,
+            maxHeight: "90vh",
+          }}
         >
           <Image
             src={image.src}
             alt={image.alt}
-            fill
-            className="object-contain"
+            width={width}
+            height={height}
+            className="h-full w-full object-contain"
             sizes="(max-width: 768px) 90vw, 80vw"
             priority
           />

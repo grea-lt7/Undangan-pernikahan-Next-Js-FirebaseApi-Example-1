@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle, Users } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
@@ -256,50 +256,6 @@ export function RsvpSection() {
                     )}
                   </fieldset>
 
-                  {attendance === "attending" && (
-                    <div className="flex flex-col gap-1.5">
-                      <label
-                        htmlFor="guestCount"
-                        className="text-sm font-medium text-[color:var(--text-secondary)]"
-                      >
-                        <Users className="inline h-3.5 w-3.5 mr-1 text-[#D4AF37]" aria-hidden />
-                        Jumlah Tamu
-                      </label>
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setGuestCount((v) => Math.max(1, v - 1))
-                          }
-                          className="flex h-10 w-10 items-center justify-center rounded-xl border border-[color:var(--border-color)] text-[color:var(--text-primary)] hover:border-[#D4AF37]/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]"
-                          aria-label="Kurangi jumlah tamu"
-                        >
-                          −
-                        </button>
-                        <span className="min-w-[2rem] text-center font-serif text-lg font-semibold text-[color:var(--text-primary)] tabular-nums">
-                          {guestCount}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setGuestCount((v) => Math.min(5, v + 1))
-                          }
-                          className="flex h-10 w-10 items-center justify-center rounded-xl border border-[color:var(--border-color)] text-[color:var(--text-primary)] hover:border-[#D4AF37]/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]"
-                          aria-label="Tambah jumlah tamu"
-                        >
-                          +
-                        </button>
-                        <span className="text-xs text-[color:var(--text-muted)]">
-                          (maks. 5 orang)
-                        </span>
-                      </div>
-                      {errors.guestCount && (
-                        <p className="text-xs text-red-500" role="alert">
-                          {errors.guestCount}
-                        </p>
-                      )}
-                    </div>
-                  )}
 
                   <Textarea
                     label="Pesan atau Doa"

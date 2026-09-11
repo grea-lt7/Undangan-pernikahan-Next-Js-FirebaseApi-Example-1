@@ -190,6 +190,15 @@ export default function AdminPage() {
         },
       },
     }));
+    if (navigator.share) {
+      await navigator.share({
+        title: "Undangan Pernikahan",
+        text: message,
+        url,
+      });
+      return;
+    }
+
     window.open(
       `https://wa.me/?text=${encodeURIComponent(message)}`,
       "_blank",

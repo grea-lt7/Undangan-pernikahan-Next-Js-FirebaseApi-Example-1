@@ -57,6 +57,21 @@
       ".write": true,
       ".validate": "newData.hasChildren(['label', 'groomName', 'brideName', 'dateText', 'locationText', 'hashtag', 'prayerTitle', 'prayerArabic', 'prayerTranslation', 'footerLabel', 'footerShareText', 'footerShareEnabled', 'footerHonorText', 'footerMadeWithText', 'footerCopyright']) && newData.child('label').isString() && newData.child('groomName').isString() && newData.child('brideName').isString() && newData.child('dateText').isString() && newData.child('locationText').isString() && newData.child('hashtag').isString() && newData.child('prayerTitle').isString() && newData.child('prayerArabic').isString() && newData.child('prayerTranslation').isString() && newData.child('footerLabel').isString() && newData.child('footerShareText').isString() && newData.child('footerShareEnabled').isBoolean() && newData.child('footerHonorText').isString() && newData.child('footerMadeWithText').isString() && newData.child('footerCopyright').isString()"
     },
+    "shareMessageTemplate": {
+      ".read": true,
+      ".write": true,
+      ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 5000"
+    },
+    "opening": {
+      ".read": true,
+      ".write": true,
+      ".validate": "newData.hasChildren(['images', 'interval', 'enabled']) && newData.child('images').hasChildren() && newData.child('interval').isNumber() && newData.child('interval').val() >= 2000 && newData.child('interval').val() <= 60000 && newData.child('enabled').isBoolean()",
+      "images": {
+        "$imageId": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 2000"
+        }
+      }
+    },
     "shares": {
       ".read": true,
       "$shareId": {
@@ -67,7 +82,13 @@
     "event": {
       ".read": true,
       ".write": true,
-      ".validate": "newData.hasChildren(['name', 'date', 'day', 'lunarDate', 'time', 'venue', 'address', 'city', 'mapsUrl', 'mapsLabel']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 120 && newData.child('date').isString() && newData.child('date').val().length > 0 && newData.child('date').val().length <= 20 && newData.child('day').isString() && newData.child('day').val().length > 0 && newData.child('day').val().length <= 30 && newData.child('lunarDate').isString() && newData.child('lunarDate').val().length <= 80 && newData.child('time').isString() && newData.child('time').val().length > 0 && newData.child('time').val().length <= 80 && newData.child('venue').isString() && newData.child('venue').val().length > 0 && newData.child('venue').val().length <= 160 && newData.child('address').isString() && newData.child('address').val().length > 0 && newData.child('address').val().length <= 240 && newData.child('city').isString() && newData.child('city').val().length > 0 && newData.child('city').val().length <= 160 && newData.child('mapsUrl').isString() && newData.child('mapsUrl').val().length > 0 && newData.child('mapsUrl').val().length <= 1000 && newData.child('mapsLabel').isString() && newData.child('mapsLabel').val().length > 0 && newData.child('mapsLabel').val().length <= 200"
+      ".validate": "newData.hasChildren(['events'])",
+      "events": {
+        ".validate": "newData.hasChildren()",
+        "$eventId": {
+          ".validate": "newData.hasChildren(['name', 'date', 'day', 'lunarDate', 'time', 'venue', 'address', 'city', 'mapsUrl', 'mapsLabel']) && (!newData.hasChild('mapsEnabled') || newData.child('mapsEnabled').isBoolean()) && newData.child('name').isString() && newData.child('name').val().length <= 120 && newData.child('date').isString() && newData.child('date').val().length <= 20 && newData.child('day').isString() && newData.child('day').val().length <= 30 && newData.child('lunarDate').isString() && newData.child('lunarDate').val().length <= 80 && newData.child('time').isString() && newData.child('time').val().length <= 80 && newData.child('venue').isString() && newData.child('venue').val().length <= 160 && newData.child('address').isString() && newData.child('address').val().length <= 240 && newData.child('city').isString() && newData.child('city').val().length <= 160 && newData.child('mapsUrl').isString() && newData.child('mapsUrl').val().length <= 1000 && newData.child('mapsLabel').isString() && newData.child('mapsLabel').val().length <= 200"
+        }
+      }
     },
     "gift": {
       ".read": true,

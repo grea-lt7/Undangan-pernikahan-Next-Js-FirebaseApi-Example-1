@@ -6,17 +6,35 @@ import { GoldShimmerText } from "@/components/motion/GoldShimmerText";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { AnimatedGradient } from "@/components/motion/AnimatedGradient";
 import { invitationData } from "@/lib/defaults";
-import { fetchHeader } from "@/lib/api";
+import { fetchHeader, fetchOpening } from "@/lib/api";
 import type { HeaderContent } from "@/types/invitation";
+import { normalizeGalleryUrl } from "@/lib/gallery";
+import { useTheme } from "@/providers/ThemeProvider";
 
 interface OpeningScreenProps {
   guestName: string;
   onOpen: () => void;
 }
 
+function normalizeOpeningImageUrl(url: string): string {
+  const normalized = normalizeGalleryUrl(url);
+  const fileId =
+    normalized.match(/[?&]id=([^&]+)/)?.[1] ??
+    normalized.match(/\/d\/([^/?]+)/)?.[1];
+
+  return fileId
+    ? `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w2000`
+    : normalized;
+}
+
 export function OpeningScreen({ guestName, onOpen }: OpeningScreenProps) {
+  const { resolvedTheme } = useTheme();
   const [closing, setClosing] = useState(false);
   const [header, setHeader] = useState<HeaderContent>(invitationData.header);
+  const [openingImages, setOpeningImages] = useState<string[]>(invitationData.opening.images);
+  const [imageInterval, setImageInterval] = useState(invitationData.opening.interval);
+  const [openingEnabled, setOpeningEnabled] = useState(invitationData.opening.enabled);
+  const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
     fetchHeader()
@@ -26,9 +44,33 @@ export function OpeningScreen({ guestName, onOpen }: OpeningScreenProps) {
         }
       })
       .catch((error) => {
-        console.error("Gagal memuat header pembuka dari Firebase:", error);
+        console.warn("Header Firebase tidak tersedia; memakai data lokal.", error);
       });
   }, []);
+
+  useEffect(() => {
+    fetchOpening()
+      .then((opening) => {
+        if (opening) {
+          setOpeningImages(
+            opening.images.map(normalizeOpeningImageUrl).filter(Boolean)
+          );
+          setImageInterval(Math.max(2000, opening.interval));
+          setOpeningEnabled(opening.enabled);
+          setActiveImage(0);
+        }
+      })
+      .catch((error) => console.warn("Gambar pembuka Firebase tidak tersedia; memakai data lokal.", error));
+  }, []);
+
+  useEffect(() => {
+    if (openingImages.length < 2) return;
+    const timer = window.setInterval(
+      () => setActiveImage((current) => (current + 1) % openingImages.length),
+      imageInterval
+    );
+    return () => window.clearInterval(timer);
+  }, [imageInterval, openingImages.length]);
 
   function handleOpen() {
     setClosing(true);
@@ -56,9 +98,33 @@ export function OpeningScreen({ guestName, onOpen }: OpeningScreenProps) {
           <AnimatedGradient className="z-0" />
           <FloatingParticles count={20} className="z-0" />
 
+          {openingEnabled && openingImages.length > 0 && (
+            <div className="absolute inset-0 z-0" aria-hidden>
+              {openingImages.map((image, index) => (
+                <img
+                  key={`${image}-${index}`}
+                  src={image}
+                  alt=""
+                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+                    index === activeImage ? "opacity-75" : "opacity-0"
+                  }`}
+                />
+              ))}
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    resolvedTheme === "dark"
+                      ? "rgba(11, 10, 8, 0.48)"
+                      : "rgba(255, 248, 231, 0.18)",
+                }}
+              />
+            </div>
+          )}
+
           <div className="relative z-10 max-h-[calc(100vh-5rem)] overflow-y-auto px-4 py-4">
-            <div className="card-glass rounded-3xl border border-[#D4AF37]/15 p-3 shadow-[0_4px_32px_rgba(212,175,55,0.08)] sm:p-4">
-              <div className="flex flex-col items-center gap-7 rounded-2xl border border-[#D4AF37]/20 px-5 py-8 text-center sm:px-8">
+            <div className="rounded-3xl border border-white/25 bg-white/10 p-3 shadow-[0_4px_32px_rgba(0,0,0,0.16)] backdrop-blur-xl sm:p-4 dark:border-white/15 dark:bg-black/20">
+              <div className="flex flex-col items-center gap-7 rounded-2xl border border-white/20 bg-white/10 px-5 py-8 text-center shadow-inner backdrop-blur-2xl sm:px-8 dark:border-white/10 dark:bg-black/15">
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}

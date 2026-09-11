@@ -12,7 +12,9 @@ import type {
   StoryItem,
   GalleryImage,
   HeaderContent,
+  OpeningSettings,
   EventDetail,
+  EventInfo,
   GiftInfo,
   MusicSettings,
   ThemeSettings,
@@ -379,7 +381,7 @@ export async function fetchHeader(): Promise<HeaderContent | null> {
   try {
     response = await fetch(
       `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/header.json`,
-      { cache: "no-store", signal: AbortSignal.timeout(10_000) }
+      { cache: "no-store", signal: AbortSignal.timeout(20_000) }
     );
   } catch (error) {
     if (error instanceof DOMException && error.name === "TimeoutError") {
@@ -413,17 +415,106 @@ export async function updateHeader(header: HeaderContent): Promise<void> {
   if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal menyimpan header`);
 }
 
-export async function fetchEvent(): Promise<EventDetail | null> {
+export async function fetchOpening(): Promise<OpeningSettings | null> {
+  if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
+  const response = await fetch(
+    `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/opening.json`,
+    { cache: "no-store", signal: AbortSignal.timeout(20_000) }
+  );
+  if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal memuat gambar pembuka`);
+  const value = (await response.json()) as Partial<OpeningSettings> | null;
+  if (!value) return null;
+  return {
+    images: Array.isArray(value.images)
+      ? value.images.filter((image): image is string => typeof image === "string")
+      : value.images && typeof value.images === "object"
+        ? Object.values(value.images).filter((image): image is string => typeof image === "string")
+        : [],
+    interval: typeof value.interval === "number" ? value.interval : 4500,
+    enabled: value.enabled !== false,
+  };
+}
+
+export async function updateOpening(opening: OpeningSettings): Promise<void> {
+  if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
+  const response = await fetch(
+    `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/opening.json`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(opening),
+      signal: AbortSignal.timeout(15_000),
+    }
+  );
+  if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal menyimpan gambar pembuka`);
+}
+
+export async function fetchShareMessageTemplate(): Promise<string | null> {
+  if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
+  const response = await fetch(
+    `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/shareMessageTemplate.json`,
+    { cache: "no-store", signal: AbortSignal.timeout(10_000) }
+  );
+  if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal memuat template share`);
+  const value = await response.json();
+  return typeof value === "string" ? value : null;
+}
+
+export async function updateShareMessageTemplate(template: string): Promise<void> {
+  if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
+  const response = await fetch(
+    `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/shareMessageTemplate.json`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(template),
+      signal: AbortSignal.timeout(15_000),
+    }
+  );
+  if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal menyimpan template share`);
+}
+
+export async function fetchEvent(): Promise<EventInfo | null> {
   if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
   const response = await fetch(
     `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/event.json`,
     { cache: "no-store", signal: AbortSignal.timeout(10_000) }
   );
   if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal memuat informasi acara`);
-  return (await response.json()) as EventDetail | null;
+  const data = (await response.json()) as EventInfo | EventDetail | null;
+  if (!data) return null;
+  if ("events" in data) {
+    const rawEvents: unknown[] = Array.isArray(data.events)
+      ? data.events
+      : Object.values(data.events as Record<string, unknown>);
+    const events = rawEvents.filter(
+      (event): event is EventDetail =>
+        typeof event === "object" && event !== null
+    );
+    return {
+      events: events.map((event) => ({ ...event, mapsEnabled: event.mapsEnabled !== false })),
+    };
+  }
+  if ("akad" in data && "reception" in data) {
+    const legacyEvents = [data.akad, data.reception].filter(
+      (detail): detail is EventDetail =>
+        typeof detail === "object" &&
+        detail !== null &&
+        "name" in detail &&
+        "date" in detail
+    );
+    return {
+      events: legacyEvents
+        .filter((detail) => detail.date || detail.name)
+        .map((detail) => ({ ...detail, mapsEnabled: detail.mapsEnabled !== false })),
+    };
+  }
+  return {
+    events: [{ ...data, mapsEnabled: data.mapsEnabled !== false }],
+  };
 }
 
-export async function updateEvent(event: EventDetail): Promise<void> {
+export async function updateEvent(event: EventInfo): Promise<void> {
   if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
   let response: Response;
   try {

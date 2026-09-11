@@ -20,6 +20,18 @@ function EventCard({ detail, delay = 0 }: EventCardProps) {
     month: "long",
     year: "numeric",
   });
+  const mapQuery = [detail.venue, detail.address, detail.city]
+    .filter(Boolean)
+    .join(", ");
+  const coordinateMatch =
+    detail.mapsUrl.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/) ??
+    detail.mapsUrl.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
+  const mapTarget = coordinateMatch
+    ? `${coordinateMatch[1]},${coordinateMatch[2]}`
+    : mapQuery || "Indonesia";
+  const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(
+    mapTarget
+  )}&hl=id&z=17&t=k&output=embed`;
 
   return (
     <Reveal delay={delay} direction="up">
@@ -67,15 +79,17 @@ function EventCard({ detail, delay = 0 }: EventCardProps) {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-[#D4AF37]/20">
-          <iframe
-            src="https://www.google.com/maps?q=-7.369244,106.5729665&hl=id&z=17&output=embed"
-            title={`Peta lokasi ${detail.mapsLabel}`}
-            className="h-72 w-full border-0 sm:h-80"
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
-        </div>
+        {detail.mapsEnabled !== false && (
+          <div className="overflow-hidden rounded-2xl border border-[#D4AF37]/20">
+            <iframe
+              src={mapEmbedUrl}
+              title={`Peta lokasi ${detail.mapsLabel}`}
+              className="h-72 w-full border-0 sm:h-80"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+        )}
 
         <a
           href={detail.mapsUrl}
@@ -99,7 +113,7 @@ export function EventDetailsSection() {
   useEffect(() => {
     fetchEvent()
       .then((remoteEvent) => {
-        if (remoteEvent) setEvent((current) => ({ ...current, akad: remoteEvent }));
+        if (remoteEvent) setEvent(remoteEvent);
       })
       .catch((error) => console.error("Gagal memuat informasi acara dari Firebase:", error));
   }, []);
@@ -129,8 +143,12 @@ export function EventDetailsSection() {
           </div>
         </Reveal>
 
-        <div className="grid grid-cols-1 gap-6">
-          <EventCard detail={event.akad} delay={0.1} />
+        <div className="flex flex-col gap-6">
+          {event.events
+            .filter((detail) => detail.date || detail.venue)
+            .map((detail, index) => (
+              <EventCard key={`${detail.name}-${index}`} detail={detail} delay={0.1 + index * 0.1} />
+            ))}
         </div>
       </div>
     </section>

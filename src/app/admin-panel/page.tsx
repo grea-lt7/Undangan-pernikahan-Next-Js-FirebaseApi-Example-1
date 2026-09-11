@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -9,7 +9,9 @@ import {
   Copy,
   Link as LinkIcon,
   MessageCircle,
+  Pencil,
   Share2,
+  X,
   Trash2,
   UserRound,
 } from "lucide-react";
@@ -18,8 +20,42 @@ import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { Button } from "@/components/ui/Button";
 import { invitationData } from "@/lib/defaults";
 import { copyToClipboard } from "@/lib/utils";
-import { deleteGuest, deleteShare, fetchGuests, fetchHeader, guestSlug, saveGuest, saveShare } from "@/lib/api";
+import {
+  deleteGuest,
+  deleteShare,
+  fetchGuests,
+  fetchHeader,
+  fetchShareMessageTemplate,
+  guestSlug,
+  saveGuest,
+  saveShare,
+  updateShareMessageTemplate,
+} from "@/lib/api";
 import type { GuestInvitation, HeaderContent } from "@/types/invitation";
+
+const LEGACY_SHARE_MESSAGE_TEMPLATE = `Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i, untuk menghadiri acara pernikahan kami
+Kpd yth: {recipientName}
+Berikut link undangan kami, untuk info lengkap dari acara, bisa kunjungi: {url}
+Merupakan suatu kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan untuk hadir dan memberikan doa restu.
+Terima Kasih
+Hormat kami, {coupleName}`;
+
+const DEFAULT_SHARE_MESSAGE_TEMPLATE = `*UNDANGAN PERNIKAHAN*
+
+Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami.
+
+*Yth. {recipientName}*
+
+Berikut link undangan kami untuk informasi lengkap acara:
+{url}
+
+Merupakan suatu kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.
+
+Terima kasih.
+
+*Hormat kami,*
+*{coupleName}*`;
+
 export default function AdminPage() {
   const [name, setName] = useState("");
   const [generatedUrl, setGeneratedUrl] = useState("");
@@ -29,6 +65,11 @@ export default function AdminPage() {
   const [guests, setGuests] = useState<Record<string, GuestInvitation>>({});
   const [guestError, setGuestError] = useState("");
   const [copiedGuest, setCopiedGuest] = useState("");
+  const [shareMessageTemplate, setShareMessageTemplate] = useState(DEFAULT_SHARE_MESSAGE_TEMPLATE);
+  const [shareMessageDraft, setShareMessageDraft] = useState(DEFAULT_SHARE_MESSAGE_TEMPLATE);
+  const [showShareEditor, setShowShareEditor] = useState(false);
+  const [savingShareMessage, setSavingShareMessage] = useState(false);
+  const shareMessageTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     fetchHeader()
@@ -36,6 +77,21 @@ export default function AdminPage() {
         if (remoteHeader) setHeader({ ...invitationData.header, ...remoteHeader });
       })
       .catch((error) => console.error("Gagal memuat copyright footer di Admin:", error));
+  }, []);
+
+  useEffect(() => {
+    fetchShareMessageTemplate()
+      .then((template) => {
+        if (template) {
+          const formattedTemplate =
+            template === LEGACY_SHARE_MESSAGE_TEMPLATE
+              ? DEFAULT_SHARE_MESSAGE_TEMPLATE
+              : template;
+          setShareMessageTemplate(formattedTemplate);
+          setShareMessageDraft(formattedTemplate);
+        }
+      })
+      .catch((error) => setGuestError(error instanceof Error ? error.message : "Gagal memuat template share."));
   }, []);
 
   useEffect(() => {
@@ -81,14 +137,15 @@ export default function AdminPage() {
   }
 
   async function copyGuestLink(slug: string) {
+    const guest = guests[slug];
     const url = `${window.location.origin}/${encodeURIComponent(slug)}`;
-    await copyToClipboard(url);
+    await copyToClipboard(buildInvitationMessage(url, guest?.name ?? slug));
     setCopiedGuest(slug);
     setTimeout(() => setCopiedGuest(""), 2200);
   }
 
-  async function copySharedLink(url: string, key: string) {
-    await copyToClipboard(url);
+  async function copySharedLink(url: string, key: string, recipientName: string) {
+    await copyToClipboard(buildInvitationMessage(url, recipientName));
     setCopiedGuest(key);
     setTimeout(() => setCopiedGuest(""), 2200);
   }
@@ -116,24 +173,91 @@ export default function AdminPage() {
 
   async function shareGuestLink(slug: string, guestName: string) {
     const url = `${window.location.origin}/${encodeURIComponent(slug)}`;
+    const message = buildInvitationMessage(url, guestName);
     await saveShare(guestName, guestName, url);
-    if (navigator.share) {
-      await navigator.share({ title: "Undangan Pernikahan", text: "Undangan pernikahan untuk Anda", url });
-    } else {
-      await copyToClipboard(url);
-    }
+    setGuests((current) => ({
+      ...current,
+      [slug]: {
+        ...current[slug],
+        name: guestName,
+        share: {
+          ...current[slug]?.share,
+          [guestSlug(guestName)]: {
+            name: guestName,
+            url,
+            sharedAt: new Date().toISOString(),
+          },
+        },
+      },
+    }));
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(message)}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
   }
 
   async function copyLink() {
     if (!generatedUrl) return;
-    await copyToClipboard(generatedUrl);
+    await copyToClipboard(buildInvitationMessage(generatedUrl, name.trim()));
     setCopied(true);
     setTimeout(() => setCopied(false), 2200);
   }
 
-  function shareLinkViaWhatsApp(url: string) {
-    const message = `Halo, berikut link undangan pernikahannya: ${url}`;
+  function buildInvitationMessage(url: string, recipientName: string) {
+    const coupleName = [header.groomName, header.brideName]
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .join(" & ");
+
+    return shareMessageTemplate
+      .replaceAll("{recipientName}", recipientName)
+      .replaceAll("{url}", url)
+      .replaceAll("{coupleName}", coupleName || "Kami");
+  }
+
+  function shareLinkViaWhatsApp(url: string, recipientName: string) {
+    const message = buildInvitationMessage(url, recipientName);
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+  }
+
+  function insertSharePlaceholder(placeholder: string) {
+    const textarea = shareMessageTextareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const nextValue =
+      shareMessageDraft.slice(0, start) +
+      placeholder +
+      shareMessageDraft.slice(end);
+    setShareMessageDraft(nextValue);
+
+    requestAnimationFrame(() => {
+      textarea.focus();
+      const cursorPosition = start + placeholder.length;
+      textarea.setSelectionRange(cursorPosition, cursorPosition);
+    });
+  }
+
+  async function saveShareMessage() {
+    const template = shareMessageDraft.trim();
+    if (!template) {
+      setGuestError("Template pesan share tidak boleh kosong.");
+      return;
+    }
+
+    setSavingShareMessage(true);
+    setGuestError("");
+    try {
+      await updateShareMessageTemplate(template);
+      setShareMessageTemplate(template);
+      setShowShareEditor(false);
+    } catch (error) {
+      setGuestError(error instanceof Error ? error.message : "Gagal menyimpan template share.");
+    } finally {
+      setSavingShareMessage(false);
+    }
   }
 
   return (
@@ -175,6 +299,7 @@ export default function AdminPage() {
             }`}
           >
             {[
+              ["/admin-panel/opening", "Edit Gambar Pembuka"],
               ["/admin-panel/header", "Edit Header Undangan"],
               ["/admin-panel/event", "Edit Informasi Acara"],
               ["/admin-panel/gallery", "Edit Galeri Foto"],
@@ -222,6 +347,19 @@ export default function AdminPage() {
                 <p className="mt-1 font-sans text-xs text-[color:var(--text-muted)]">
                   Masukkan nama lengkap penerima
                 </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-3"
+                  onClick={() => {
+                    setShareMessageDraft(shareMessageTemplate);
+                    setShowShareEditor(true);
+                  }}
+                >
+                  <Pencil className="h-4 w-4" aria-hidden />
+                  Edit Teks Share
+                </Button>
               </div>
             </div>
 
@@ -289,7 +427,7 @@ export default function AdminPage() {
                     type="button"
                     size="sm"
                     className="w-full justify-center bg-[#25D366] text-white hover:bg-[#20bd5a]"
-                    onClick={() => shareLinkViaWhatsApp(generatedUrl)}
+                    onClick={() => shareLinkViaWhatsApp(generatedUrl, name.trim())}
                     aria-label="Bagikan link melalui WhatsApp"
                   >
                     <MessageCircle className="h-4 w-4 shrink-0" aria-hidden />
@@ -340,7 +478,7 @@ export default function AdminPage() {
                             <span key={shareSlug} className="inline-flex items-center gap-1 rounded-full bg-[#D4AF37]/10 pl-3 pr-1 py-1 text-xs text-[#D4AF37]">
                               <button
                                 type="button"
-                                onClick={() => copySharedLink(share.url, `share-${slug}-${shareSlug}`)}
+                                onClick={() => copySharedLink(share.url, `share-${slug}-${shareSlug}`, share.name)}
                                 className="inline-flex items-center gap-1 hover:text-[#F1D77A]"
                                 aria-label={`Salin link ${share.name}`}
                               >
@@ -365,6 +503,72 @@ export default function AdminPage() {
               </div>
             </div>
           </div>
+
+          {showShareEditor && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="share-message-editor-title"
+            >
+              <div className="card-glass w-full max-w-2xl rounded-3xl border border-[#D4AF37]/25 p-5 shadow-2xl sm:p-7">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 id="share-message-editor-title" className="font-serif text-2xl font-semibold text-[color:var(--text-primary)]">
+                      Edit Teks Share
+                    </h2>
+                    <p className="mt-2 text-xs leading-relaxed text-[color:var(--text-muted)]">
+                      Gunakan {`{recipientName}`} untuk nama tamu, {`{url}`} untuk link, dan {`{coupleName}`} untuk nama mempelai. Gunakan tanda * untuk teks tebal WhatsApp.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowShareEditor(false)}
+                    className="rounded-lg p-2 text-[color:var(--text-muted)] hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]"
+                    aria-label="Tutup editor teks share"
+                  >
+                    <X className="h-5 w-5" aria-hidden />
+                  </button>
+                </div>
+                <textarea
+                  ref={shareMessageTextareaRef}
+                  value={shareMessageDraft}
+                  onChange={(event) => setShareMessageDraft(event.target.value)}
+                  rows={10}
+                  className="mt-5 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm leading-relaxed text-[color:var(--text-primary)] focus:border-[#D4AF37] focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30"
+                  aria-label="Template teks share"
+                />
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="self-center text-xs text-[color:var(--text-muted)]">
+                    Sisipkan:
+                  </span>
+                  {[
+                    ["Nama Tamu", "{recipientName}"],
+                    ["Link", "{url}"],
+                    ["Nama Mempelai", "{coupleName}"],
+                  ].map(([label, placeholder]) => (
+                    <button
+                      key={placeholder}
+                      type="button"
+                      onClick={() => insertSharePlaceholder(placeholder)}
+                      className="rounded-lg border border-[#D4AF37]/30 px-3 py-1.5 text-xs text-[#D4AF37] transition-colors hover:bg-[#D4AF37]/10"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-5 flex justify-end gap-2">
+                  <Button type="button" variant="ghost" onClick={() => setShowShareEditor(false)}>
+                    Batal
+                  </Button>
+                  <Button type="button" onClick={saveShareMessage} loading={savingShareMessage}>
+                    <Check className="h-4 w-4" aria-hidden />
+                    Simpan Teks
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="card-glass rounded-3xl border border-[#D4AF37]/15 p-3 text-center shadow-[0_4px_32px_rgba(212,175,55,0.08)] sm:p-4">
             <div className="rounded-2xl border border-[#D4AF37]/20 px-5 py-8 sm:px-7">

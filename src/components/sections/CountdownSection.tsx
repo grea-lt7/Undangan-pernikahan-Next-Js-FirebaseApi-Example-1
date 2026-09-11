@@ -5,7 +5,8 @@ import { useCountdown } from "@/hooks/useCountdown";
 import { useEffect, useMemo, useState } from "react";
 import { Reveal } from "@/components/motion/Reveal";
 import { invitationData } from "@/lib/defaults";
-import { fetchHeader } from "@/lib/api";
+import { fetchEvent, fetchHeader } from "@/lib/api";
+import { WEDDING_DATE } from "@/lib/constants";
 import type { HeaderContent } from "@/types/invitation";
 
 function parseHeaderDate(dateText: string): Date | null {
@@ -64,14 +65,24 @@ function CountdownCard({ value, label, delay }: CountdownCardProps) {
 
 export function CountdownSection() {
   const [header, setHeader] = useState<HeaderContent>(invitationData.header);
+  const [eventDate, setEventDate] = useState(
+    invitationData.event.events[0]?.date ?? ""
+  );
   const targetDate = useMemo(
-    () =>
-      parseHeaderDate(header.dateText) ??
-      new Date(`${invitationData.event.akad.date}T08:00:00`),
-    [header.dateText]
+    () => {
+      const headerDate = parseHeaderDate(header.dateText);
+      if (headerDate) return headerDate;
+
+      if (eventDate) {
+        const parsedEventDate = new Date(`${eventDate}T08:00:00`);
+        if (!Number.isNaN(parsedEventDate.getTime())) return parsedEventDate;
+      }
+
+      return WEDDING_DATE;
+    },
+    [eventDate, header.dateText]
   );
   const { days, hours, minutes, seconds, isExpired } = useCountdown(targetDate);
-  const { akad } = invitationData.event;
 
   useEffect(() => {
     fetchHeader()
@@ -79,6 +90,13 @@ export function CountdownSection() {
         if (remoteHeader) setHeader({ ...invitationData.header, ...remoteHeader });
       })
       .catch((error) => console.error("Gagal memuat tanggal countdown dari Firebase:", error));
+
+    fetchEvent()
+      .then((remoteEvent) => {
+        const firstEventDate = remoteEvent?.events[0]?.date;
+        if (firstEventDate) setEventDate(firstEventDate);
+      })
+      .catch((error) => console.error("Gagal memuat tanggal acara dari Firebase:", error));
   }, []);
 
   return (

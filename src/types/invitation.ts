@@ -8,8 +8,7 @@ export interface CoupleInfo {
 }
 
 export interface EventInfo {
-  akad: EventDetail;
-  reception: EventDetail;
+  events: EventDetail[];
 }
 
 export interface EventDetail {
@@ -23,6 +22,7 @@ export interface EventDetail {
   city: string;
   mapsUrl: string;
   mapsLabel: string;
+  mapsEnabled?: boolean;
 }
 
 export interface GiftInfo {
@@ -111,6 +111,13 @@ export interface InvitationData {
   hashtag: string;
   themeColor: string;
   header: HeaderContent;
+  opening: OpeningSettings;
+}
+
+export interface OpeningSettings {
+  images: string[];
+  interval: number;
+  enabled: boolean;
 }
 
 export type AttendanceStatus = "attending" | "not_attending" | "maybe";

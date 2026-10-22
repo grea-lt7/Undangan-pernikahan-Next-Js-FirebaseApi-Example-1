@@ -77,6 +77,11 @@
       ".write": true,
       ".validate": "newData.hasChildren(['label', 'groomName', 'brideName', 'dateText', 'locationText', 'hashtag', 'prayerTitle', 'prayerArabic', 'prayerTranslation', 'footerLabel', 'footerShareText', 'footerShareEnabled', 'footerHonorText', 'footerMadeWithText', 'footerCopyright']) && newData.child('label').isString() && newData.child('groomName').isString() && newData.child('brideName').isString() && newData.child('dateText').isString() && newData.child('locationText').isString() && newData.child('hashtag').isString() && newData.child('prayerTitle').isString() && newData.child('prayerArabic').isString() && newData.child('prayerTranslation').isString() && newData.child('footerLabel').isString() && newData.child('footerShareText').isString() && newData.child('footerShareEnabled').isBoolean() && newData.child('footerHonorText').isString() && newData.child('footerMadeWithText').isString() && newData.child('footerCopyright').isString()"
     },
+    "coHosts": {
+      ".read": true,
+      ".write": true,
+      ".validate": "newData.isString() && newData.val().length <= 2000"
+    },
     "shareMessageTemplate": {
       ".read": true,
       ".write": true,

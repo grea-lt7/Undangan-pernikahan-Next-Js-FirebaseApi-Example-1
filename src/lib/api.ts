@@ -504,6 +504,31 @@ export async function updateHeader(header: HeaderContent): Promise<void> {
   if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal menyimpan header`);
 }
 
+export async function fetchCoHosts(): Promise<string> {
+  if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
+  const response = await fetch(
+    `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/coHosts.json`,
+    { cache: "no-store", signal: AbortSignal.timeout(10_000) }
+  );
+  if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal memuat turut mengundang`);
+  const value: unknown = await response.json();
+  return typeof value === "string" ? value : "";
+}
+
+export async function updateCoHosts(coHosts: string): Promise<void> {
+  if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
+  const response = await fetch(
+    `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/coHosts.json`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(coHosts),
+      signal: AbortSignal.timeout(15_000),
+    }
+  );
+  if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal menyimpan turut mengundang`);
+}
+
 export async function fetchOpening(): Promise<OpeningSettings | null> {
   if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
   const response = await fetch(

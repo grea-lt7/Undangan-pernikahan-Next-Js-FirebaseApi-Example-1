@@ -5,11 +5,12 @@ import { Check, Copy, Heart, MessageCircle, Share2, Trash2, X } from "lucide-rea
 import { GoldShimmerText } from "@/components/motion/GoldShimmerText";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { invitationData } from "@/lib/defaults";
-import { deleteShare, fetchGuest, fetchHeader, guestSlug, saveShare } from "@/lib/api";
+import { deleteShare, fetchCoHosts, fetchGuest, fetchHeader, guestSlug, saveShare } from "@/lib/api";
 import type { HeaderContent, ShareRecord } from "@/types/invitation";
 
 export function FooterSection() {
   const [header, setHeader] = useState<HeaderContent>(invitationData.header);
+  const [coHosts, setCoHosts] = useState<string[]>([]);
   const [showShare, setShowShare] = useState(false);
   const [shareName, setShareName] = useState("");
   const [shareError, setShareError] = useState("");
@@ -27,6 +28,12 @@ export function FooterSection() {
         if (remoteHeader) setHeader({ ...invitationData.header, ...remoteHeader });
       })
       .catch((error) => console.error("Gagal memuat footer dari Firebase:", error));
+  }, []);
+
+  useEffect(() => {
+    fetchCoHosts()
+      .then((value) => setCoHosts(value.split(/\r?\n/).map((name) => name.trim()).filter(Boolean)))
+      .catch((error) => console.error("Gagal memuat daftar turut mengundang:", error));
   }, []);
 
   useEffect(() => {
@@ -136,6 +143,24 @@ export function FooterSection() {
             {header.hashtag}
           </p>
         </div>
+
+        {coHosts.length > 0 && (
+          <div className="card-glass w-full max-w-xl rounded-2xl border border-[#D4AF37]/20 px-5 py-6 sm:px-8">
+            <h2 className="font-serif text-lg font-semibold text-[#D4AF37]">
+              Turut Mengundang
+            </h2>
+            <div className="mt-4 flex flex-col gap-2">
+              {coHosts.map((name, index) => (
+                <p
+                  key={`${index}-${name}`}
+                  className="font-serif text-sm leading-relaxed text-[color:var(--text-primary)] sm:text-base"
+                >
+                  {name}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="gold-divider w-full" aria-hidden />
 

@@ -8,8 +8,10 @@ import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { Button } from "@/components/ui/Button";
 import { AdminFieldActions } from "@/components/admin/AdminFieldActions";
 import { invitationData } from "@/lib/defaults";
-import { fetchHeader, updateHeader } from "@/lib/api";
+import { fetchCoHosts, fetchHeader, updateCoHosts, updateHeader } from "@/lib/api";
 import type { HeaderContent } from "@/types/invitation";
+
+const CO_HOSTS_EXAMPLE = "Bapak H. Example & Ibu Example\nBapak Example & Ibu Example";
 
 const fields: Array<[Exclude<keyof HeaderContent, "footerShareEnabled">, string]> = [
   ["label", "Label atas"],
@@ -47,15 +49,17 @@ const examples: Record<Exclude<keyof HeaderContent, "footerShareEnabled">, strin
 
 export default function HeaderAdminPage() {
   const [header, setHeader] = useState<HeaderContent>(invitationData.header);
+  const [coHosts, setCoHosts] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchHeader()
-      .then((remoteHeader) => {
+    Promise.all([fetchHeader(), fetchCoHosts()])
+      .then(([remoteHeader, remoteCoHosts]) => {
         if (remoteHeader) setHeader({ ...invitationData.header, ...remoteHeader });
+        setCoHosts(remoteCoHosts);
       })
       .catch((err) => setError(err instanceof Error ? err.message : "Gagal memuat header."))
       .finally(() => setLoading(false));
@@ -65,7 +69,7 @@ export default function HeaderAdminPage() {
     setSaving(true);
     setError("");
     try {
-      await updateHeader(header);
+      await Promise.all([updateHeader(header), updateCoHosts(coHosts)]);
       setSaved(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal menyimpan header.");
@@ -120,6 +124,40 @@ export default function HeaderAdminPage() {
                   </div>
                 </div>
               ))}
+              <div className="border-t border-[#D4AF37]/25 pt-5">
+                <h2 className="font-serif text-xl font-semibold text-[#D4AF37]">
+                  Turut Mengundang
+                </h2>
+                <p className="mt-1 text-xs text-[color:var(--text-muted)]">
+                  Tulis satu nama atau pasangan keluarga pada setiap baris.
+                </p>
+                <label htmlFor="co-hosts" className="mt-4 block text-sm text-[color:var(--text-primary)]">
+                  Nama keluarga yang turut mengundang
+                </label>
+                <textarea
+                  id="co-hosts"
+                  value={coHosts}
+                  onChange={(event) => {
+                    setCoHosts(event.target.value);
+                    setSaved(false);
+                  }}
+                  placeholder={CO_HOSTS_EXAMPLE}
+                  rows={4}
+                  className="mt-2 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm"
+                />
+                <AdminFieldActions
+                  fieldLabel="turut mengundang"
+                  example={CO_HOSTS_EXAMPLE}
+                  onClear={() => {
+                    setCoHosts("");
+                    setSaved(false);
+                  }}
+                  onUseExample={() => {
+                    setCoHosts(CO_HOSTS_EXAMPLE);
+                    setSaved(false);
+                  }}
+                />
+              </div>
               <label className="flex items-center gap-3 rounded-xl border border-[#D4AF37]/20 p-4 text-sm text-[color:var(--text-primary)]">
                 <input
                   type="checkbox"

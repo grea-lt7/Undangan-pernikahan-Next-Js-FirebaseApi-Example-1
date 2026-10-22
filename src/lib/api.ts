@@ -529,6 +529,31 @@ export async function updateCoHosts(coHosts: string): Promise<void> {
   if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal menyimpan turut mengundang`);
 }
 
+export async function fetchCoHostsTitleMode(): Promise<boolean> {
+  if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
+  const response = await fetch(
+    `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/coHostsTitleMode.json`,
+    { cache: "no-store", signal: AbortSignal.timeout(10_000) }
+  );
+  if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal memuat mode judul turut mengundang`);
+  const value: unknown = await response.json();
+  return value === true;
+}
+
+export async function updateCoHostsTitleMode(enabled: boolean): Promise<void> {
+  if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
+  const response = await fetch(
+    `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/coHostsTitleMode.json`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(enabled),
+      signal: AbortSignal.timeout(15_000),
+    }
+  );
+  if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal menyimpan mode judul turut mengundang`);
+}
+
 export async function fetchOpening(): Promise<OpeningSettings | null> {
   if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
   const response = await fetch(

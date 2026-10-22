@@ -1,16 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Check, Copy, Heart, MessageCircle, Share2, Trash2, X } from "lucide-react";
 import { GoldShimmerText } from "@/components/motion/GoldShimmerText";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { invitationData } from "@/lib/defaults";
-import { deleteShare, fetchCoHosts, fetchGuest, fetchHeader, guestSlug, saveShare } from "@/lib/api";
+import {
+  deleteShare,
+  fetchCoHosts,
+  fetchCoHostsTitleMode,
+  fetchGuest,
+  fetchHeader,
+  guestSlug,
+  saveShare,
+} from "@/lib/api";
 import type { HeaderContent, ShareRecord } from "@/types/invitation";
+
+function getCurrentGuestName(): string {
+  const pathName = window.location.pathname.split("/").filter(Boolean)[0] ?? "";
+  return decodeURIComponent(pathName).replace(/[-_]+/g, " ").trim().slice(0, 80);
+}
 
 export function FooterSection() {
   const [header, setHeader] = useState<HeaderContent>(invitationData.header);
   const [coHosts, setCoHosts] = useState<string[]>([]);
+  const [coHostsTitleMode, setCoHostsTitleMode] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [shareName, setShareName] = useState("");
   const [shareError, setShareError] = useState("");
@@ -19,7 +33,11 @@ export function FooterSection() {
   const [generatedShareUrl, setGeneratedShareUrl] = useState("");
   const [copiedShareUrl, setCopiedShareUrl] = useState(false);
   const [copiedRecipient, setCopiedRecipient] = useState("");
-  const [currentGuestName, setCurrentGuestName] = useState("");
+  const currentGuestName = useSyncExternalStore(
+    () => () => {},
+    getCurrentGuestName,
+    () => ""
+  );
   const [shareHistory, setShareHistory] = useState<ShareRecord[]>([]);
 
   useEffect(() => {
@@ -31,18 +49,17 @@ export function FooterSection() {
   }, []);
 
   useEffect(() => {
-    fetchCoHosts()
-      .then((value) => setCoHosts(value.split(/\r?\n/).map((name) => name.trim()).filter(Boolean)))
+    Promise.all([fetchCoHosts(), fetchCoHostsTitleMode()])
+      .then(([value, titleMode]) => {
+        setCoHosts(value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean));
+        setCoHostsTitleMode(titleMode);
+      })
       .catch((error) => console.error("Gagal memuat daftar turut mengundang:", error));
   }, []);
 
   useEffect(() => {
-    const pathName = window.location.pathname.split("/").filter(Boolean)[0] ?? "";
-    if (!pathName || pathName === "admin") return;
-
-    const guestName = decodeURIComponent(pathName).replace(/[-_]+/g, " ").trim().slice(0, 80);
+    const guestName = getCurrentGuestName();
     if (!guestName) return;
-    setCurrentGuestName(guestName);
 
     fetchGuest(guestSlug(guestName))
       .then(async (guest) => {
@@ -150,14 +167,23 @@ export function FooterSection() {
               Turut Mengundang
             </h2>
             <div className="mt-4 flex flex-col gap-2">
-              {coHosts.map((name, index) => (
-                <p
-                  key={`${index}-${name}`}
-                  className="font-serif text-sm leading-relaxed text-[color:var(--text-primary)] sm:text-base"
-                >
-                  {name}
-                </p>
-              ))}
+              {coHosts.map((line, index) => {
+                const title = line.match(/^\*\*(.+)\*\*$/)?.[1]?.trim();
+                const text = title ?? line.replace(/\*\*/g, "");
+
+                return (
+                  <p
+                    key={`${index}-${line}`}
+                    className={
+                      coHostsTitleMode && title
+                        ? "font-serif text-xs font-semibold leading-relaxed text-[#D4AF37] sm:text-sm"
+                        : "font-serif text-sm leading-relaxed text-[color:var(--text-primary)] sm:text-base"
+                    }
+                  >
+                    {text}
+                  </p>
+                );
+              })}
             </div>
           </div>
         )}

@@ -8,10 +8,31 @@ import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { Button } from "@/components/ui/Button";
 import { AdminFieldActions } from "@/components/admin/AdminFieldActions";
 import { invitationData } from "@/lib/defaults";
-import { fetchCoHosts, fetchHeader, updateCoHosts, updateHeader } from "@/lib/api";
+import {
+  fetchCoHosts,
+  fetchCoHostsTitleMode,
+  fetchHeader,
+  updateCoHosts,
+  updateCoHostsTitleMode,
+  updateHeader,
+} from "@/lib/api";
 import type { HeaderContent } from "@/types/invitation";
 
-const CO_HOSTS_EXAMPLE = "Bapak H. Example & Ibu Example\nBapak Example & Ibu Example";
+const CO_HOSTS_EXAMPLE = `**Pimpinan Pondok Pesantren Al Hidayah Pasirgancleng**
+Kiyai Hj Agus Abdurrahman
+**Pimpinan Pondok Pesantren Asyifa Kp. Lembur Sawah Serang Banten**
+Kiyai Hj Midi
+**Pimpinan Pondok Pesantren Nurul Hidayah Kp. Jagamukti**
+Kiyai Hj Ahmad
+Kiyai Hj Aun
+Ustadz Ahyan
+**Pimpinan Padepokan Jampang Nusantara**
+Ustadz Ahmad Asep Muntaha
+**Tokoh Agama**
+Ustadz Hasan Pasekon
+**Keluarga Besar**
+Bpk Emen / Ma Usih (Tegal Panyang)
+Bpk Samhuri / Ma Ebah (Jagamukti)`;
 
 const fields: Array<[Exclude<keyof HeaderContent, "footerShareEnabled">, string]> = [
   ["label", "Label atas"],
@@ -50,16 +71,18 @@ const examples: Record<Exclude<keyof HeaderContent, "footerShareEnabled">, strin
 export default function HeaderAdminPage() {
   const [header, setHeader] = useState<HeaderContent>(invitationData.header);
   const [coHosts, setCoHosts] = useState("");
+  const [coHostsTitleMode, setCoHostsTitleMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    Promise.all([fetchHeader(), fetchCoHosts()])
-      .then(([remoteHeader, remoteCoHosts]) => {
+    Promise.all([fetchHeader(), fetchCoHosts(), fetchCoHostsTitleMode()])
+      .then(([remoteHeader, remoteCoHosts, remoteCoHostsTitleMode]) => {
         if (remoteHeader) setHeader({ ...invitationData.header, ...remoteHeader });
         setCoHosts(remoteCoHosts);
+        setCoHostsTitleMode(remoteCoHostsTitleMode);
       })
       .catch((err) => setError(err instanceof Error ? err.message : "Gagal memuat header."))
       .finally(() => setLoading(false));
@@ -69,7 +92,11 @@ export default function HeaderAdminPage() {
     setSaving(true);
     setError("");
     try {
-      await Promise.all([updateHeader(header), updateCoHosts(coHosts)]);
+      await Promise.all([
+        updateHeader(header),
+        updateCoHosts(coHosts),
+        updateCoHostsTitleMode(coHostsTitleMode),
+      ]);
       setSaved(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal menyimpan header.");
@@ -129,10 +156,22 @@ export default function HeaderAdminPage() {
                   Turut Mengundang
                 </h2>
                 <p className="mt-1 text-xs text-[color:var(--text-muted)]">
-                  Tulis satu nama atau pasangan keluarga pada setiap baris.
+                  Aktifkan mode judul, lalu bungkus baris judul dengan dua tanda bintang, misalnya **Tokoh Agama**.
                 </p>
+                <label className="mt-4 flex w-fit cursor-pointer items-center gap-3 rounded-xl border border-[#D4AF37]/20 px-4 py-3 text-sm text-[color:var(--text-primary)]">
+                  <input
+                    type="checkbox"
+                    checked={coHostsTitleMode}
+                    onChange={(event) => {
+                      setCoHostsTitleMode(event.target.checked);
+                      setSaved(false);
+                    }}
+                    className="h-4 w-4 accent-[#D4AF37]"
+                  />
+                  Gunakan mode judul dan kelompok
+                </label>
                 <label htmlFor="co-hosts" className="mt-4 block text-sm text-[color:var(--text-primary)]">
-                  Nama keluarga yang turut mengundang
+                  {coHostsTitleMode ? "Judul dan nama yang turut mengundang" : "Nama keluarga yang turut mengundang"}
                 </label>
                 <textarea
                   id="co-hosts"
@@ -142,7 +181,7 @@ export default function HeaderAdminPage() {
                     setSaved(false);
                   }}
                   placeholder={CO_HOSTS_EXAMPLE}
-                  rows={4}
+                  rows={coHostsTitleMode ? 14 : 4}
                   className="mt-2 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm"
                 />
                 <AdminFieldActions

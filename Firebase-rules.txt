@@ -82,6 +82,11 @@
       ".write": true,
       ".validate": "newData.isString() && newData.val().length <= 2000"
     },
+    "coHostsTitleMode": {
+      ".read": true,
+      ".write": true,
+      ".validate": "newData.isBoolean()"
+    },
     "shareMessageTemplate": {
       ".read": true,
       ".write": true,

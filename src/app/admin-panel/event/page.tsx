@@ -38,6 +38,22 @@ const examples: Record<keyof EventDetail, string> = {
   mapsEnabled: "Aktif",
 };
 
+function createEmptyEvent(name = "Resepsi"): EventDetail {
+  return {
+    name,
+    date: "",
+    day: "",
+    lunarDate: "",
+    time: "",
+    venue: "",
+    address: "",
+    city: "",
+    mapsUrl: "",
+    mapsLabel: "",
+    mapsEnabled: true,
+  };
+}
+
 export default function EventAdminPage() {
   const [event, setEvent] = useState<EventInfo>(invitationData.event);
   const [loading, setLoading] = useState(true);
@@ -51,12 +67,7 @@ export default function EventAdminPage() {
         if (remoteEvent) {
           const events = remoteEvent.events.map((detail) => ({ ...detail }));
           if (events.length === 1) {
-            events.push({
-              ...events[0],
-              name: "Resepsi",
-              time: "10:00 - 12:00",
-              mapsEnabled: true,
-            });
+            events.push(createEmptyEvent());
           }
           setEvent({ events });
         }
@@ -81,15 +92,7 @@ export default function EventAdminPage() {
 
   function addEvent() {
     setEvent((current) => ({
-      events: [
-        ...current.events,
-        {
-          ...current.events[0],
-          name: "Resepsi",
-          time: "10:00 - 12:00",
-          mapsEnabled: true,
-        },
-      ],
+      events: [...current.events, createEmptyEvent()],
     }));
     setSaved(false);
   }
@@ -134,7 +137,7 @@ export default function EventAdminPage() {
                     )}
                   </div>
                   <p className="mt-2 text-xs leading-relaxed text-[color:var(--text-muted)]">
-                    Isi detail acara ini. Kartu kosong tidak akan ditampilkan di undangan.
+                    Isi detail acara dan lokasi untuk kartu ini. Link Google Maps harus sesuai dengan lokasi acara ini; jangan gunakan link dari kartu lain. Kartu kosong tidak akan ditampilkan di undangan.
                   </p>
                 </div>
                 <div className="flex flex-col gap-4">
@@ -143,6 +146,11 @@ export default function EventAdminPage() {
                       <label htmlFor={`event-${eventIndex}-${field}`} className="text-sm text-[color:var(--text-primary)]">
                         {label}
                       </label>
+                      {field === "mapsUrl" && (
+                        <p className="mt-1 text-xs text-[color:var(--text-muted)]">
+                          Untuk titik yang tepat, tempel link Google Maps yang dibagikan dari pin lokasi acara ini.
+                        </p>
+                      )}
                       <input
                         id={`event-${eventIndex}-${field}`}
                         type={field === "date" ? "date" : "text"}

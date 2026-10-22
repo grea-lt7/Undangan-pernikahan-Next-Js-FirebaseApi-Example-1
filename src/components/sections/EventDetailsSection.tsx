@@ -51,8 +51,8 @@ function getMapUrls(detail: EventDetail): { embedUrl: string; linkUrl: string } 
   }
 
   const coordinateMatch =
-    rawMapsUrl.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/) ??
-    rawMapsUrl.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
+    rawMapsUrl.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/) ??
+    rawMapsUrl.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
   const placePath = mapUrl?.pathname.match(/\/maps\/(?:place|search)\/([^/]+)/)?.[1];
   const locationFromPath = placePath
     ? new URLSearchParams(`location=${placePath}`).get("location")

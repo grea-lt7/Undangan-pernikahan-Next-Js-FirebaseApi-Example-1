@@ -8,7 +8,12 @@ import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { Button } from "@/components/ui/Button";
 import { AdminFieldActions } from "@/components/admin/AdminFieldActions";
 import { invitationData } from "@/lib/defaults";
-import { fetchGallery, updateGallery } from "@/lib/api";
+import {
+  fetchGallery,
+  fetchGalleryVisibility,
+  updateGallery,
+  updateGalleryVisibility,
+} from "@/lib/api";
 import { normalizeGalleryUrl } from "@/lib/gallery";
 import type { GalleryImage } from "@/types/invitation";
 
@@ -41,14 +46,16 @@ function getAutoImageDimensions(src: string) {
 
 export default function GalleryAdminPage() {
   const [gallery, setGallery] = useState<GalleryImage[]>(invitationData.gallery);
+  const [visible, setVisible] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchGallery()
-      .then(async (remoteGallery) => {
+    Promise.all([fetchGallery(), fetchGalleryVisibility()])
+      .then(async ([remoteGallery, remoteVisible]) => {
+        setVisible(remoteVisible);
         if (!remoteGallery?.length) {
           setLoading(false);
           return;
@@ -126,7 +133,10 @@ export default function GalleryAdminPage() {
         })
       );
 
-      await updateGallery(normalizedGallery);
+      await Promise.all([
+        updateGallery(normalizedGallery),
+        updateGalleryVisibility(visible),
+      ]);
       setGallery(normalizedGallery);
       setSaved(true);
     } catch (err) {
@@ -154,6 +164,21 @@ export default function GalleryAdminPage() {
           <p className="text-sm text-[color:var(--text-muted)]">Memuat galeri...</p>
         ) : (
           <div className="flex flex-col gap-5">
+            <label className="flex w-fit cursor-pointer items-center gap-3 rounded-xl border border-[#D4AF37]/25 px-4 py-3 text-sm text-[color:var(--text-primary)]">
+              <input
+                type="checkbox"
+                checked={visible}
+                onChange={(event) => {
+                  setVisible(event.target.checked);
+                  setSaved(false);
+                }}
+                className="h-4 w-4 accent-[#D4AF37]"
+              />
+              Tampilkan galeri foto di undangan
+              <span className="text-xs text-[color:var(--text-muted)]">
+                ({visible ? "Aktif" : "Nonaktif"})
+              </span>
+            </label>
             {gallery.map((image, index) => (
               <article key={`${index}-${image.src}`} className="card-glass rounded-3xl border border-[#D4AF37]/15 p-6">
                 <div className="flex items-start justify-between gap-4">

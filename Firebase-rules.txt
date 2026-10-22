@@ -44,6 +44,26 @@
       ".write": true,
       ".validate": "newData.isBoolean()"
     },
+    "galleryVisibility": {
+      ".read": true,
+      ".write": true,
+      ".validate": "newData.isBoolean()"
+    },
+    "sectionSettings": {
+      ".read": true,
+      ".write": true,
+      ".validate": "newData.hasChildren(['order', 'visibility']) && newData.child('order').hasChildren(['0', '1', '2', '3', '4', '5', '6', '7']) && newData.child('visibility').hasChildren(['hero', 'countdown', 'event', 'gallery', 'story', 'gift', 'rsvp', 'footer', 'opening', 'music', 'theme', 'navigation'])",
+      "order": {
+        "$index": {
+          ".validate": "newData.isString() && (newData.val() == 'hero' || newData.val() == 'countdown' || newData.val() == 'event' || newData.val() == 'gallery' || newData.val() == 'story' || newData.val() == 'gift' || newData.val() == 'rsvp' || newData.val() == 'footer')"
+        }
+      },
+      "visibility": {
+        "$component": {
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
     "gallery": {
       ".read": true,
       ".write": true,

@@ -13,6 +13,66 @@ interface EventCardProps {
   delay?: number;
 }
 
+function getMapUrls(detail: EventDetail): { embedUrl: string; linkUrl: string } | null {
+  const mapQuery = [detail.venue, detail.address, detail.city]
+    .filter(Boolean)
+    .join(", ");
+  const rawMapsUrl = detail.mapsUrl.trim();
+  const mapLinkCandidate = rawMapsUrl
+    ? /^[a-z][a-z\d+.-]*:/i.test(rawMapsUrl)
+      ? rawMapsUrl
+      : `https://${rawMapsUrl}`
+    : "";
+
+  let mapUrl: URL | null = null;
+  try {
+    if (mapLinkCandidate) {
+      const parsedUrl = new URL(mapLinkCandidate);
+      if (parsedUrl.protocol === "https:" || parsedUrl.protocol === "http:") {
+        mapUrl = parsedUrl;
+      }
+    }
+  } catch {
+    mapUrl = null;
+  }
+
+  const mapLinkUrl = mapUrl?.toString() ??
+    (mapQuery
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`
+      : "");
+  if (!mapLinkUrl) return null;
+
+  if (
+    mapUrl &&
+    (mapUrl.hostname === "google.com" || mapUrl.hostname.endsWith(".google.com")) &&
+    mapUrl.pathname.includes("/maps/embed")
+  ) {
+    return { embedUrl: mapUrl.toString(), linkUrl: mapLinkUrl };
+  }
+
+  const coordinateMatch =
+    rawMapsUrl.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/) ??
+    rawMapsUrl.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
+  const placePath = mapUrl?.pathname.match(/\/maps\/(?:place|search)\/([^/]+)/)?.[1];
+  const locationFromPath = placePath
+    ? new URLSearchParams(`location=${placePath}`).get("location")
+    : null;
+  const locationFromUrl = mapUrl && (
+    mapUrl.searchParams.get("q") ??
+    mapUrl.searchParams.get("query") ??
+    mapUrl.searchParams.get("destination") ??
+    locationFromPath
+  );
+  const mapTarget = coordinateMatch
+    ? `${coordinateMatch[1]},${coordinateMatch[2]}`
+    : locationFromUrl || mapQuery || rawMapsUrl;
+  const embedUrl = `https://www.google.com/maps?q=${encodeURIComponent(
+    mapTarget
+  )}&hl=id&z=17&t=k&output=embed`;
+
+  return { embedUrl, linkUrl: mapLinkUrl };
+}
+
 function EventCard({ detail, delay = 0 }: EventCardProps) {
   const displayDate = new Date(detail.date).toLocaleDateString("id-ID", {
     weekday: "long",
@@ -20,18 +80,7 @@ function EventCard({ detail, delay = 0 }: EventCardProps) {
     month: "long",
     year: "numeric",
   });
-  const mapQuery = [detail.venue, detail.address, detail.city]
-    .filter(Boolean)
-    .join(", ");
-  const coordinateMatch =
-    detail.mapsUrl.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/) ??
-    detail.mapsUrl.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
-  const mapTarget = coordinateMatch
-    ? `${coordinateMatch[1]},${coordinateMatch[2]}`
-    : mapQuery || "Indonesia";
-  const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(
-    mapTarget
-  )}&hl=id&z=17&t=k&output=embed`;
+  const mapUrls = getMapUrls(detail);
 
   return (
     <Reveal delay={delay} direction="up">
@@ -79,11 +128,11 @@ function EventCard({ detail, delay = 0 }: EventCardProps) {
           </div>
         </div>
 
-        {detail.mapsEnabled !== false && (
+        {detail.mapsEnabled !== false && mapUrls && (
           <div className="overflow-hidden rounded-2xl border border-[#D4AF37]/20">
             <iframe
-              src={mapEmbedUrl}
-              title={`Peta lokasi ${detail.mapsLabel}`}
+              src={mapUrls.embedUrl}
+              title={`Peta lokasi ${detail.mapsLabel || detail.venue || "acara"}`}
               className="h-72 w-full border-0 sm:h-80"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
@@ -91,17 +140,19 @@ function EventCard({ detail, delay = 0 }: EventCardProps) {
           </div>
         )}
 
-        <a
-          href={detail.mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-xl border border-[#D4AF37]/40 px-5 py-3 text-sm font-medium text-[#D4AF37] transition-all duration-300 hover:bg-[#D4AF37]/10 hover:border-[#D4AF37]/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] w-fit"
-          aria-label={`Buka ${detail.mapsLabel} di Google Maps`}
-        >
-          <MapPin className="h-3.5 w-3.5" aria-hidden />
-          Buka Google Maps
-          <ExternalLink className="h-3 w-3 opacity-60" aria-hidden />
-        </a>
+        {mapUrls && (
+          <a
+            href={mapUrls.linkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-fit items-center gap-2 rounded-xl border border-[#D4AF37]/40 px-5 py-3 text-sm font-medium text-[#D4AF37] transition-all duration-300 hover:border-[#D4AF37]/70 hover:bg-[#D4AF37]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]"
+            aria-label={`Buka ${detail.mapsLabel || detail.venue || "lokasi acara"} di Google Maps`}
+          >
+            <MapPin className="h-3.5 w-3.5" aria-hidden />
+            {detail.mapsLabel || "Buka Google Maps"}
+            <ExternalLink className="h-3 w-3 opacity-60" aria-hidden />
+          </a>
+        )}
       </article>
     </Reveal>
   );

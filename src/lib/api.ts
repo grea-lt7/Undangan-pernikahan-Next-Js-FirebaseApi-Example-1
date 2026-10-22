@@ -21,6 +21,8 @@ import type {
   GuestInvitation,
   ShareRecord,
 } from "@/types/invitation";
+import type { InvitationSectionSettings } from "@/lib/sectionSettings";
+import { normalizeSectionSettings } from "@/lib/sectionSettings";
 import {
   APPS_SCRIPT_URL,
   ACTIONS,
@@ -347,6 +349,93 @@ export async function updateStoryVisibility(visible: boolean): Promise<void> {
     }
   );
   if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal menyimpan status cerita`);
+}
+
+export async function fetchGalleryVisibility(): Promise<boolean> {
+  if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
+  const response = await fetch(
+    `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/galleryVisibility.json`,
+    { cache: "no-store", signal: AbortSignal.timeout(10_000) }
+  );
+  if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal memuat status galeri`);
+  const value = await response.json();
+  return value !== false;
+}
+
+export async function updateGalleryVisibility(visible: boolean): Promise<void> {
+  if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
+  const response = await fetch(
+    `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/galleryVisibility.json`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(visible),
+      signal: AbortSignal.timeout(15_000),
+    }
+  );
+  if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal menyimpan status galeri`);
+}
+
+export async function fetchInvitationSectionSettings(): Promise<InvitationSectionSettings> {
+  if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
+  const databaseUrl = FIREBASE_DATABASE_URL.replace(/\/+$/, "");
+  const [settingsResponse, storyResponse, galleryResponse] = await Promise.all([
+    fetch(`${databaseUrl}/sectionSettings.json`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    }),
+    fetch(`${databaseUrl}/storyVisibility.json`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    }),
+    fetch(`${databaseUrl}/galleryVisibility.json`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    }),
+  ]);
+  if (!settingsResponse.ok) {
+    throw new Error(`HTTP ${settingsResponse.status}: Gagal memuat urutan komponen`);
+  }
+  if (!storyResponse.ok) {
+    throw new Error(`HTTP ${storyResponse.status}: Gagal memuat status cerita`);
+  }
+  if (!galleryResponse.ok) {
+    throw new Error(`HTTP ${galleryResponse.status}: Gagal memuat status galeri`);
+  }
+
+  const storedSettings = await settingsResponse.json();
+  const storyVisibility = await storyResponse.json();
+  const galleryVisibility = await galleryResponse.json();
+  const settings = normalizeSectionSettings(storedSettings);
+
+  if (storyVisibility !== null) settings.visibility.story = storyVisibility !== false;
+  if (galleryVisibility !== null) settings.visibility.gallery = galleryVisibility !== false;
+
+  return settings;
+}
+
+export async function updateInvitationSectionSettings(
+  settings: InvitationSectionSettings
+): Promise<void> {
+  if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
+  const databaseUrl = FIREBASE_DATABASE_URL.replace(/\/+$/, "");
+  const requests = [
+    fetch(`${databaseUrl}/sectionSettings.json`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(settings),
+      signal: AbortSignal.timeout(15_000),
+    }),
+    updateStoryVisibility(settings.visibility.story),
+    updateGalleryVisibility(settings.visibility.gallery),
+  ];
+  const responses = await Promise.all(requests);
+  const failedResponse = responses.find(
+    (response): response is Response => response instanceof Response && !response.ok
+  );
+  if (failedResponse) {
+    throw new Error(`HTTP ${failedResponse.status}: Gagal menyimpan pengaturan komponen`);
+  }
 }
 
 export async function fetchGallery(): Promise<GalleryImage[] | null> {

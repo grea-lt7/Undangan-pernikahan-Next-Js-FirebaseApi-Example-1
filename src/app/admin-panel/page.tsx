@@ -318,6 +318,7 @@ export default function AdminPage() {
               ["/admin-panel/rsvp", "Komentar RSVP"],
               ["/admin-panel/music", "Edit Musik"],
               ["/admin-panel/theme", "Edit Tema"],
+              ["/admin-panel/sections", "Urutan & Komponen Undangan"],
             ].map(([href, label]) => (
               <Link
                 key={href}

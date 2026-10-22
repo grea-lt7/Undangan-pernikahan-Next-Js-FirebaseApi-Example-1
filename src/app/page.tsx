@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { OpeningScreen } from "@/components/sections/OpeningScreen";
 import { HeroSection } from "@/components/sections/HeroSection";
@@ -14,6 +14,15 @@ import { FloatingNavigation } from "@/components/FloatingNavigation";
 import { MusicPlayer } from "@/components/MusicPlayer";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { LoadingState } from "@/components/ui/LoadingState";
+import {
+  fetchInvitationSectionSettings,
+} from "@/lib/api";
+import {
+  DEFAULT_SECTION_SETTINGS,
+  normalizeSectionSettings,
+  type InvitationSectionId,
+  type InvitationSectionSettings,
+} from "@/lib/sectionSettings";
 
 const GallerySection = dynamic(
   () =>
@@ -23,59 +32,99 @@ const GallerySection = dynamic(
   { loading: () => <LoadingState message="Memuat galeri..." className="py-24" /> }
 );
 
-function useGuestNameFromUrl(): string {
-  const [guestName, setGuestName] = useState("Tamu Undangan");
-
-  useEffect(() => {
+function getGuestNameFromUrl(): string {
     const params = new URLSearchParams(window.location.search);
     const pathName = window.location.pathname.split("/").filter(Boolean)[0] ?? "";
     const raw = pathName || params.get("to") || params.get("name") || "";
-    if (!raw) return;
+    if (!raw) return "Tamu Undangan";
 
     const decoded = decodeURIComponent(raw)
       .replace(/[-_]+/g, " ")
       .trim()
       .slice(0, 80);
-    if (decoded) setGuestName(decoded);
-  }, []);
+    return decoded || "Tamu Undangan";
+}
 
-  return guestName;
+function useGuestNameFromUrl(): string {
+  return useSyncExternalStore(
+    () => () => {},
+    getGuestNameFromUrl,
+    () => "Tamu Undangan"
+  );
 }
 
 export default function WeddingPage() {
   const [opened, setOpened] = useState(false);
+  const [sectionSettings, setSectionSettings] =
+    useState<InvitationSectionSettings>(DEFAULT_SECTION_SETTINGS);
   const guestName = useGuestNameFromUrl();
+  const visibleSectionIds = useMemo(
+    () =>
+      sectionSettings.order.filter((id) => sectionSettings.visibility[id]),
+    [sectionSettings.order, sectionSettings.visibility]
+  );
+
+  useEffect(() => {
+    fetchInvitationSectionSettings()
+      .then((settings) => {
+        const normalizedSettings = normalizeSectionSettings(settings);
+        setSectionSettings(normalizedSettings);
+        if (!normalizedSettings.visibility.opening) setOpened(true);
+      })
+      .catch((error) =>
+        console.error("Gagal memuat urutan dan visibilitas komponen:", error)
+      );
+  }, []);
+
+  function renderSection(id: InvitationSectionId) {
+    switch (id) {
+      case "hero":
+        return <HeroSection key={id} />;
+      case "countdown":
+        return <CountdownSection key={id} />;
+      case "event":
+        return <EventDetailsSection key={id} />;
+      case "gallery":
+        return (
+          <Suspense
+            key={id}
+            fallback={
+              <LoadingState message="Memuat galeri..." className="py-24" />
+            }
+          >
+            <GallerySection />
+          </Suspense>
+        );
+      case "story":
+        return <StorySection key={id} />;
+      case "gift":
+        return <GiftSection key={id} />;
+      case "rsvp":
+        return <RsvpSection key={id} />;
+      case "footer":
+        return <FooterSection key={id} />;
+    }
+  }
 
   return (
     <>
-      {!opened && (
+      {!opened && sectionSettings.visibility.opening && (
         <OpeningScreen guestName={guestName} onOpen={() => setOpened(true)} />
       )}
 
-      {opened && (
+      {(opened || !sectionSettings.visibility.opening) && (
         <>
           <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
-            <MusicPlayer />
-            <ThemeToggle />
+            {sectionSettings.visibility.music && <MusicPlayer />}
+            {sectionSettings.visibility.theme && <ThemeToggle />}
           </div>
 
-          <FloatingNavigation />
+          {sectionSettings.visibility.navigation && (
+            <FloatingNavigation visibleSections={visibleSectionIds} />
+          )}
 
           <main id="main-content" tabIndex={-1}>
-            <HeroSection />
-            <CountdownSection />
-            <EventDetailsSection />
-            <Suspense
-              fallback={
-                <LoadingState message="Memuat galeri..." className="py-24" />
-              }
-            >
-              <GallerySection />
-            </Suspense>
-            <StorySection />
-            <GiftSection />
-            <RsvpSection />
-            <FooterSection />
+            {visibleSectionIds.map(renderSection)}
           </main>
         </>
       )}

@@ -7,7 +7,7 @@ import { X, ZoomIn } from "lucide-react";
 import { Reveal } from "@/components/motion/Reveal";
 import { invitationData } from "@/lib/defaults";
 import type { GalleryImage } from "@/types/invitation";
-import { fetchGallery } from "@/lib/api";
+import { fetchGallery, fetchGalleryVisibility } from "@/lib/api";
 import { normalizeGalleryUrl } from "@/lib/gallery";
 
 interface LightboxProps {
@@ -74,16 +74,20 @@ function Lightbox({ image, onClose }: LightboxProps) {
 export function GallerySection() {
   const [selected, setSelected] = useState<GalleryImage | null>(null);
   const [gallery, setGallery] = useState(invitationData.gallery);
+  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    fetchGallery()
-      .then((remoteGallery) => {
+    Promise.all([fetchGallery(), fetchGalleryVisibility()])
+      .then(([remoteGallery, remoteVisible]) => {
+        setVisible(remoteVisible);
         if (remoteGallery?.length) {
           setGallery(remoteGallery.map((image) => ({ ...image, src: normalizeGalleryUrl(image.src) })));
         }
       })
       .catch((error) => console.error("Gagal memuat galeri dari Firebase:", error));
   }, []);
+
+  if (!visible) return null;
 
   return (
     <section

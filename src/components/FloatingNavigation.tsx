@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { fetchStoryVisibility } from "@/lib/api";
 
 interface NavItem {
   id: string;
@@ -20,23 +19,20 @@ const navItems: NavItem[] = [
   { id: "rsvp", label: "RSVP" },
 ];
 
-export function FloatingNavigation() {
+export function FloatingNavigation({
+  visibleSections,
+}: {
+  visibleSections: readonly string[];
+}) {
   const [visible, setVisible] = useState(false);
   const [active, setActive] = useState("hero");
   const [expanded, setExpanded] = useState(false);
-  const [storyVisible, setStoryVisible] = useState(true);
+  const visibleNavItems = useMemo(
+    () => navItems.filter((item) => visibleSections.includes(item.id)),
+    [visibleSections]
+  );
 
   useEffect(() => {
-    fetchStoryVisibility()
-      .then(setStoryVisible)
-      .catch((error) => console.error("Gagal memuat visibilitas cerita:", error));
-  }, []);
-
-  useEffect(() => {
-    const visibleNavItems = storyVisible
-      ? navItems
-      : navItems.filter((item) => item.id !== "story");
-
     function onScroll() {
       setVisible(window.scrollY > 300);
 
@@ -56,7 +52,7 @@ export function FloatingNavigation() {
 
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [storyVisible]);
+  }, [visibleNavItems]);
 
   function scrollTo(id: string) {
     const el = document.getElementById(id);
@@ -87,7 +83,7 @@ export function FloatingNavigation() {
                   transition={{ duration: 0.25, ease: [0.19, 1, 0.22, 1] }}
                   className="card-glass rounded-2xl p-2 shadow-[0_8px_32px_rgba(0,0,0,0.3)] flex flex-col gap-1"
                 >
-                  {(storyVisible ? navItems : navItems.filter((item) => item.id !== "story")).map((item) => (
+                  {visibleNavItems.map((item) => (
                     <button
                       key={item.id}
                       onClick={() => scrollTo(item.id)}
@@ -140,7 +136,7 @@ export function FloatingNavigation() {
             </button>
 
             <div className="flex flex-col gap-1.5 items-end py-1" aria-hidden>
-              {(storyVisible ? navItems : navItems.filter((item) => item.id !== "story")).map((item) => (
+              {visibleNavItems.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => scrollTo(item.id)}

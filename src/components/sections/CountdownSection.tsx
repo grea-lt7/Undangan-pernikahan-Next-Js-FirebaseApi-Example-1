@@ -41,7 +41,7 @@ function CountdownCard({ value, label, delay }: CountdownCardProps) {
   return (
     <Reveal delay={delay} direction="up">
       <motion.div
-        className="card-glass flex flex-col items-center justify-center gap-2 rounded-2xl px-4 py-6 min-w-[72px] sm:min-w-[90px]"
+        className="card-glass flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-2xl px-2 py-4 sm:min-w-[90px] sm:gap-2 sm:px-4 sm:py-6"
         whileHover={{ y: -4, transition: { duration: 0.25 } }}
       >
         <motion.span
@@ -49,13 +49,13 @@ function CountdownCard({ value, label, delay }: CountdownCardProps) {
           initial={{ opacity: 0, y: -12, scale: 0.8 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.3, ease: [0.19, 1, 0.22, 1] }}
-          className="font-serif text-3xl font-bold tabular-nums gold-text sm:text-4xl"
+          className="font-serif text-2xl font-bold tabular-nums gold-text sm:text-4xl"
           aria-live="polite"
           aria-label={`${value} ${label}`}
         >
           {value}
         </motion.span>
-        <span className="font-sans text-xs uppercase tracking-widest text-[color:var(--text-muted)]">
+        <span className="font-sans text-[0.6rem] uppercase tracking-[0.12em] text-[color:var(--text-muted)] sm:text-xs sm:tracking-widest">
           {label}
         </span>
       </motion.div>
@@ -102,7 +102,7 @@ export function CountdownSection() {
   return (
     <section
       id="countdown"
-      className="relative py-20 section-padding overflow-hidden"
+      className="relative overflow-hidden py-14 section-padding sm:py-20"
       aria-label="Hitung mundur hari pernikahan"
     >
       <div className="absolute inset-0 pointer-events-none" aria-hidden>
@@ -112,7 +112,7 @@ export function CountdownSection() {
 
       <div className="mx-auto max-w-4xl">
         <Reveal direction="up">
-          <div className="mb-12 flex flex-col items-center gap-3 text-center">
+          <div className="mb-8 flex flex-col items-center gap-3 text-center sm:mb-12">
             <span className="font-sans text-xs uppercase tracking-[0.4em] text-[color:var(--text-muted)]">
               Menuju Hari Bahagia
             </span>
@@ -138,34 +138,10 @@ export function CountdownSection() {
             </div>
           </Reveal>
         ) : (
-          <div className="flex items-center justify-center gap-3 sm:gap-5 flex-wrap">
+          <div className="mx-auto grid w-full max-w-2xl grid-cols-4 items-center gap-2 sm:gap-4">
             <CountdownCard value={days} label="Hari" delay={0} />
-            <Reveal delay={0.15}>
-              <span
-                className="font-serif text-2xl font-bold text-[#D4AF37]/50 pb-2 self-center"
-                aria-hidden
-              >
-                :
-              </span>
-            </Reveal>
             <CountdownCard value={hours} label="Jam" delay={0.1} />
-            <Reveal delay={0.25}>
-              <span
-                className="font-serif text-2xl font-bold text-[#D4AF37]/50 pb-2 self-center"
-                aria-hidden
-              >
-                :
-              </span>
-            </Reveal>
             <CountdownCard value={minutes} label="Menit" delay={0.2} />
-            <Reveal delay={0.35}>
-              <span
-                className="font-serif text-2xl font-bold text-[#D4AF37]/50 pb-2 self-center"
-                aria-hidden
-              >
-                :
-              </span>
-            </Reveal>
             <CountdownCard value={seconds} label="Detik" delay={0.3} />
           </div>
         )}

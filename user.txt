@@ -1,0 +1,80 @@
+*DATA UNDANGAN PERNIKAHAN*
+
+Halo, mohon bantu lengkapi data berikut untuk pembuatan undangan pernikahan.
+Bagian yang tidak diperlukan boleh ditulis “Kosongkan”. Foto dan audio bisa dikirim sebagai file atau tautan yang dapat dibuka.
+
+*1. DATA MEMPELAI*
+Nama lengkap mempelai laki-laki:
+Nama panggilan:
+Nama orang tua mempelai laki-laki:
+
+Nama lengkap mempelai perempuan:
+Nama panggilan:
+Nama orang tua mempelai perempuan:
+
+Hashtag pernikahan (opsional):
+
+*2. DETAIL ACARA*
+Silakan salin bagian ini untuk setiap acara, misalnya Akad Nikah dan Resepsi.
+
+*ACARA 1*
+Nama acara:
+Tanggal:
+Hari:
+Waktu:
+Nama tempat/gedung:
+Alamat lengkap:
+Kota/kabupaten:
+Tanggal Hijriah (opsional):
+Link Google Maps (opsional):
+
+*ACARA 2 (OPSIONAL)*
+Nama acara:
+Tanggal:
+Hari:
+Waktu:
+Nama tempat/gedung:
+Alamat lengkap:
+Kota/kabupaten:
+Tanggal Hijriah (opsional):
+Link Google Maps (opsional):
+
+*3. FOTO DAN CERITA*
+Foto untuk layar pembuka (kirim file/tautan):
+Foto galeri (kirim file/tautan dan urutan jika ada):
+Keterangan foto (opsional):
+
+Cerita perjalanan pasangan (opsional):
+• Tahun:
+  Judul:
+  Cerita:
+
+*4. TEKS UNDANGAN (OPSIONAL)*
+Judul/label undangan:
+Doa atau pesan khusus:
+Ucapan terima kasih/penutup:
+Teks footer/copyright:
+Teks khusus untuk dibagikan lewat WhatsApp:
+
+*5. HADIAH (OPSIONAL)*
+Nama bank/e-wallet:
+Nama pemilik rekening:
+Nomor rekening/nomor e-wallet:
+Alamat penerima hadiah:
+
+Jika ada rekening/e-wallet tambahan, salin format berikut:
+Nama bank/e-wallet:
+Nama pemilik rekening:
+Nomor rekening/nomor e-wallet:
+
+*6. MUSIK DAN TAMPILAN (OPSIONAL)*
+Link lagu/audio:
+Musik otomatis diputar (Ya/Tidak):
+Tema tampilan (Terang/Gelap/Otomatis):
+
+*7. DAFTAR TAMU (OPSIONAL)*
+Nama tamu untuk dibuatkan link undangan personal:
+
+*CATATAN*
+Pastikan tautan foto, musik, dan Google Maps bisa dibuka. Jangan kirim kata sandi akun pribadi.
+Terima kasih.

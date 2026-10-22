@@ -54,6 +54,35 @@ export default function GiftAdminPage() {
     setSaved(false);
   }
 
+  function validateGift(): string | null {
+    const requiredFields: Array<[GiftTextField, string, number]> = [
+      ["sectionLabel", "Label section", 80],
+      ["title", "Judul", 120],
+      ["description", "Deskripsi", 1000],
+      ["address", "Alamat", 240],
+    ];
+
+    for (const [field, label, maxLength] of requiredFields) {
+      if (!gift[field]) return `${label} wajib diisi.`;
+      if (gift[field].length > maxLength) {
+        return `${label} maksimal ${maxLength} karakter.`;
+      }
+    }
+    if (gift.thankYou.length > 300) return "Ucapan terima kasih maksimal 300 karakter.";
+    if (gift.closingArabic.length > 500) return "Penutup Arab maksimal 500 karakter.";
+    if (gift.accounts.length === 0) return "Tambahkan minimal satu kartu rekening atau e-wallet.";
+
+    for (const [index, account] of gift.accounts.entries()) {
+      if (!account.label || !account.holder || !account.number) {
+        return `Lengkapi nama bank/e-wallet, nama pemilik, dan nomor pada kartu ${index + 1}.`;
+      }
+      if (account.label.length > 100 || account.holder.length > 120 || account.number.length > 60) {
+        return `Periksa panjang teks pada kartu ${index + 1}; batasnya 100, 120, dan 60 karakter.`;
+      }
+    }
+    return null;
+  }
+
   useEffect(() => {
     fetchGift()
       .then((remoteGift) => {
@@ -64,6 +93,12 @@ export default function GiftAdminPage() {
   }, []);
 
   async function save() {
+    const validationError = validateGift();
+    if (validationError) {
+      setError(validationError);
+      setSaved(false);
+      return;
+    }
     setSaving(true);
     setError("");
     try {
@@ -120,7 +155,7 @@ export default function GiftAdminPage() {
                   </p>
                 </div>
                 {gift.accounts.map((account, index) => (
-                  <div key={`${index}-${account.label}`} className="rounded-2xl border border-[#D4AF37]/20 p-4">
+                  <div key={index} className="rounded-2xl border border-[#D4AF37]/20 p-4">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <span className="text-sm font-semibold text-[#D4AF37]">Kartu {index + 1}</span>
                       <button

@@ -690,16 +690,48 @@ export async function fetchGift(): Promise<GiftInfo | null> {
 
 export async function updateGift(gift: GiftInfo): Promise<void> {
   if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
-  const response = await fetch(
-    `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/gift.json`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(gift),
-      signal: AbortSignal.timeout(20_000),
+  let response: Response;
+  try {
+    response = await fetch(
+      `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/gift.json`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(gift),
+        signal: AbortSignal.timeout(20_000),
+      }
+    );
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "TimeoutError") {
+      throw new Error("Koneksi ke Firebase timeout. Periksa koneksi internet lalu coba lagi.");
     }
-  );
-  if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal menyimpan informasi hadiah`);
+    if (error instanceof TypeError) {
+      throw new Error(
+        "Tidak dapat terhubung ke Firebase. Periksa URL database, koneksi internet, dan izin akses Firebase."
+      );
+    }
+    throw error;
+  }
+  if (!response.ok) {
+    const responseBody = await response.text();
+    let detail = responseBody;
+    try {
+      const parsedBody: unknown = JSON.parse(responseBody);
+      if (
+        typeof parsedBody === "object" &&
+        parsedBody !== null &&
+        "error" in parsedBody &&
+        typeof parsedBody.error === "string"
+      ) {
+        detail = parsedBody.error;
+      }
+    } catch {
+      // Keep the raw response when Firebase does not return JSON.
+    }
+    throw new Error(
+      `HTTP ${response.status}: ${detail.slice(0, 300) || "Gagal menyimpan informasi hadiah"}`
+    );
+  }
 }
 
 export async function fetchMusic(): Promise<MusicSettings | null> {

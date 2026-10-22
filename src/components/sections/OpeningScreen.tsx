@@ -166,9 +166,9 @@ export function OpeningScreen({ guestName, onOpen }: OpeningScreenProps) {
               <div className="mx-auto my-1 h-px w-16 bg-[#D4AF37]/30" aria-hidden />
               <GoldShimmerText
                 text={header.groomName}
-                size="lg"
+                size="md"
                 as="h1"
-                className="leading-tight"
+                className="w-full max-w-full break-words px-1 text-center text-[clamp(1.5rem,7vw,2.5rem)] leading-tight"
               />
               <motion.span
                 initial={{ opacity: 0, scale: 0 }}
@@ -181,9 +181,9 @@ export function OpeningScreen({ guestName, onOpen }: OpeningScreenProps) {
               </motion.span>
               <GoldShimmerText
                 text={header.brideName}
-                size="lg"
+                size="md"
                 as="h1"
-                className="leading-tight"
+                className="w-full max-w-full break-words px-1 text-center text-[clamp(1.5rem,7vw,2.5rem)] leading-tight"
               />
             </motion.div>
 

@@ -134,14 +134,14 @@ export function FooterSection() {
             text={header.groomName}
             as="p"
             size="lg"
-            className="max-w-full break-words text-[clamp(1.5rem,7vw,2.5rem)] leading-tight"
+            className="w-full max-w-full break-words text-center text-[clamp(1.5rem,7vw,2.5rem)] leading-tight"
           />
           <p className="font-serif text-xl italic text-[#D4AF37]">&amp;</p>
           <GoldShimmerText
             text={header.brideName}
             as="p"
             size="lg"
-            className="max-w-full break-words text-[clamp(1.5rem,7vw,2.5rem)] leading-tight"
+            className="w-full max-w-full break-words text-center text-[clamp(1.5rem,7vw,2.5rem)] leading-tight"
           />
           <p className="mt-2 font-sans text-sm text-[color:var(--text-muted)] tracking-wider">
             {header.hashtag}

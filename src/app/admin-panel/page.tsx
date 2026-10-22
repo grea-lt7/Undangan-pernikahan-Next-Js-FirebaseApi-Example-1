@@ -615,11 +615,11 @@ export default function AdminPage() {
                 {name.trim() || "Nama Tamu"}
               </p>
               <div className="mx-auto my-6 h-px w-16 bg-[#D4AF37]/30" aria-hidden />
-              <p className="font-serif text-2xl font-bold gold-text">
+              <p className="w-full max-w-full break-words px-1 font-serif text-[clamp(1.5rem,7vw,2.5rem)] font-bold leading-tight gold-text">
                 {header.groomName}
               </p>
               <p className="my-2 font-serif text-xl italic text-[#D4AF37]">&amp;</p>
-              <p className="font-serif text-2xl font-bold gold-text">
+              <p className="w-full max-w-full break-words px-1 font-serif text-[clamp(1.5rem,7vw,2.5rem)] font-bold leading-tight gold-text">
                 {header.brideName}
               </p>
             </div>

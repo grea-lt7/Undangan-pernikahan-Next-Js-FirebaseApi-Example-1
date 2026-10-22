@@ -34,7 +34,7 @@ export function HeroSection() {
         <div className="absolute bottom-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center gap-8 text-center max-w-4xl mx-auto">
+      <div className="relative z-10 flex w-full max-w-4xl flex-col items-center gap-8 text-center mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -52,7 +52,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.1, delay: 0.4, ease: [0.19, 1, 0.22, 1] }}
-            className="gold-shimmer-text max-w-full break-words px-2 font-serif text-[clamp(2rem,9vw,3.5rem)] font-bold leading-tight tracking-normal sm:text-6xl sm:tracking-wide md:text-7xl lg:text-8xl"
+            className="gold-shimmer-text w-full max-w-full break-words px-2 font-serif text-[clamp(2rem,9vw,3.5rem)] font-bold leading-tight tracking-normal sm:text-6xl sm:tracking-wide md:text-7xl lg:text-8xl"
           >
             {header.groomName}
           </motion.h1>
@@ -71,7 +71,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: -40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.1, delay: 0.5, ease: [0.19, 1, 0.22, 1] }}
-            className="gold-shimmer-text max-w-full break-words px-2 font-serif text-[clamp(2rem,9vw,3.5rem)] font-bold leading-tight tracking-normal sm:text-6xl sm:tracking-wide md:text-7xl lg:text-8xl"
+            className="gold-shimmer-text w-full max-w-full break-words px-2 font-serif text-[clamp(2rem,9vw,3.5rem)] font-bold leading-tight tracking-normal sm:text-6xl sm:tracking-wide md:text-7xl lg:text-8xl"
           >
             {header.brideName}
           </motion.h1>

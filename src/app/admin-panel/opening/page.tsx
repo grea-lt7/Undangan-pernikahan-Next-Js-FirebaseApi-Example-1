@@ -6,6 +6,7 @@ import { ArrowLeft, Check, Plus, Save, Trash2 } from "lucide-react";
 import { AnimatedGradient } from "@/components/motion/AnimatedGradient";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { Button } from "@/components/ui/Button";
+import { AdminFieldActions } from "@/components/admin/AdminFieldActions";
 import { invitationData } from "@/lib/defaults";
 import { fetchOpening, updateOpening } from "@/lib/api";
 import { normalizeGalleryUrl } from "@/lib/gallery";
@@ -21,9 +22,12 @@ function normalizeOpeningImageUrl(url: string): string {
     : normalized;
 }
 
+const EXAMPLE_OPENING_IMAGE_URL = "https://drive.google.com/file/d/1AbCdEfGhIjKlMnOpQrStUvWxYz/view";
+const EXAMPLE_IMAGE_INTERVAL = "4500";
+
 export default function OpeningAdminPage() {
   const [images, setImages] = useState(invitationData.opening.images);
-  const [interval, setIntervalValue] = useState(invitationData.opening.interval);
+  const [interval, setIntervalValue] = useState(String(invitationData.opening.interval));
   const [enabled, setEnabled] = useState(invitationData.opening.enabled);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -35,7 +39,7 @@ export default function OpeningAdminPage() {
       .then((opening) => {
         if (opening) {
           setImages(opening.images);
-          setIntervalValue(opening.interval);
+          setIntervalValue(String(opening.interval));
           setEnabled(opening.enabled);
         }
       })
@@ -50,10 +54,11 @@ export default function OpeningAdminPage() {
     try {
       await updateOpening({
         images: cleanImages,
-        interval: Math.max(2000, interval),
+        interval: Math.max(2000, Number(interval) || 2000),
         enabled,
       });
       setImages(cleanImages);
+      setIntervalValue(String(Math.max(2000, Number(interval) || 2000)));
       setSaved(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal menyimpan gambar pembuka.");
@@ -94,28 +99,45 @@ export default function OpeningAdminPage() {
                 Aktifkan gambar pembuka
               </label>
               {images.map((image, index) => (
-                <div key={`${index}-${image}`} className="flex items-center gap-3">
-                  <input
-                    value={image}
-                    onChange={(event) => {
-                      setImages((current) => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item));
-                      setSaved(false);
-                    }}
-                    placeholder="https://drive.google.com/file/d/..."
-                    className="min-w-0 flex-1 rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm"
+                <div key={`${index}-${image}`}>
+                  <div className="flex items-center gap-3">
+                    <input
+                      aria-label={`Link gambar pembuka ${index + 1}`}
+                      value={image}
+                      onChange={(event) => {
+                        setImages((current) => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item));
+                        setSaved(false);
+                      }}
+                      placeholder={EXAMPLE_OPENING_IMAGE_URL}
+                      className="min-w-0 flex-1 rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm"
+                    />
+                    <button type="button" onClick={() => { setImages((current) => current.filter((_, itemIndex) => itemIndex !== index)); setSaved(false); }} className="rounded-lg p-2 text-red-400 hover:bg-red-500/10" aria-label={`Hapus gambar ${index + 1}`}>
+                      <Trash2 className="h-4 w-4" aria-hidden />
+                    </button>
+                  </div>
+                  <AdminFieldActions
+                    fieldLabel={`link gambar pembuka ${index + 1}`}
+                    example={EXAMPLE_OPENING_IMAGE_URL}
+                    onClear={() => { setImages((current) => current.map((item, itemIndex) => itemIndex === index ? "" : item)); setSaved(false); }}
+                    onUseExample={() => { setImages((current) => current.map((item, itemIndex) => itemIndex === index ? EXAMPLE_OPENING_IMAGE_URL : item)); setSaved(false); }}
                   />
-                  <button type="button" onClick={() => setImages((current) => current.filter((_, itemIndex) => itemIndex !== index))} className="rounded-lg p-2 text-red-400 hover:bg-red-500/10" aria-label={`Hapus gambar ${index + 1}`}>
-                    <Trash2 className="h-4 w-4" aria-hidden />
-                  </button>
                 </div>
               ))}
               <Button type="button" variant="outline" onClick={() => setImages((current) => [...current, ""])} className="justify-center">
                 <Plus className="h-4 w-4" aria-hidden /> Tambah Gambar
               </Button>
-              <label className="text-sm text-[color:var(--text-primary)]">
-                Durasi pergantian (milidetik)
-                <input type="number" min={2000} value={interval} onChange={(event) => { setIntervalValue(Number(event.target.value)); setSaved(false); }} className="mt-2 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm" />
-              </label>
+              <div>
+                <label htmlFor="opening-interval" className="text-sm text-[color:var(--text-primary)]">
+                  Durasi pergantian (milidetik)
+                </label>
+                <input id="opening-interval" type="number" min={2000} value={interval} onChange={(event) => { setIntervalValue(event.target.value); setSaved(false); }} placeholder={EXAMPLE_IMAGE_INTERVAL} className="mt-2 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm" />
+                <AdminFieldActions
+                  fieldLabel="durasi pergantian"
+                  example={EXAMPLE_IMAGE_INTERVAL}
+                  onClear={() => { setIntervalValue(""); setSaved(false); }}
+                  onUseExample={() => { setIntervalValue(EXAMPLE_IMAGE_INTERVAL); setSaved(false); }}
+                />
+              </div>
               <Button type="button" onClick={save} loading={saving} className="justify-center">
                 {saved ? <Check className="h-4 w-4" aria-hidden /> : <Save className="h-4 w-4" aria-hidden />}
                 {saved ? "Tersimpan" : "Simpan Gambar Pembuka"}

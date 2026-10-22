@@ -6,6 +6,7 @@ import { ArrowLeft, Check, Save } from "lucide-react";
 import { AnimatedGradient } from "@/components/motion/AnimatedGradient";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { Button } from "@/components/ui/Button";
+import { AdminFieldActions } from "@/components/admin/AdminFieldActions";
 import { invitationData } from "@/lib/defaults";
 import { fetchHeader, updateHeader } from "@/lib/api";
 import type { HeaderContent } from "@/types/invitation";
@@ -26,6 +27,23 @@ const fields: Array<[Exclude<keyof HeaderContent, "footerShareEnabled">, string]
   ["footerMadeWithText", "Footer: Teks dibuat dengan"],
   ["footerCopyright", "Footer: Copyright"],
 ];
+
+const examples: Record<Exclude<keyof HeaderContent, "footerShareEnabled">, string> = {
+  label: "Undangan Pernikahan",
+  groomName: "Nurpalah Setiawan",
+  brideName: "Irma Suryaningsih",
+  dateText: "Minggu, 4 Oktober 2026",
+  locationText: "Gedung Serbaguna, Jakarta Selatan",
+  hashtag: "#NurpalahIrma2026",
+  prayerTitle: "Doa untuk Kedua Mempelai",
+  prayerArabic: "بَارَكَ اللَّهُ لَكُمَا وَبَارَكَ عَلَيْكُمَا وَجَمَعَ بَيْنَكُمَا فِي خَيْرٍ",
+  prayerTranslation: "Semoga Allah memberkahi kalian berdua dan menghimpun kalian dalam kebaikan.",
+  footerLabel: "Merupakan suatu kehormatan dan kebahagiaan bagi kami",
+  footerShareText: "Bagikan kabar bahagia ini kepada keluarga dan sahabat.",
+  footerHonorText: "Kehadiran dan doa restu Anda merupakan kebahagiaan bagi kami.",
+  footerMadeWithText: "Dibuat dengan sepenuh hati untuk hari istimewa kami.",
+  footerCopyright: "© 2026 Nurpalah Setiawan & Irma Suryaningsih. Hak cipta dilindungi.",
+};
 
 export default function HeaderAdminPage() {
   const [header, setHeader] = useState<HeaderContent>(invitationData.header);
@@ -84,14 +102,22 @@ export default function HeaderAdminPage() {
                       </p>
                     </div>
                   )}
-                  <label className="text-sm text-[color:var(--text-primary)]">
-                    {label}
+                  <div>
+                    <label htmlFor={`header-${field}`} className="text-sm text-[color:var(--text-primary)]">
+                      {label}
+                    </label>
                     {field === "prayerTranslation" || field === "prayerArabic" || field === "footerShareText" || field === "footerHonorText" || field === "footerMadeWithText" ? (
-                      <textarea rows={field === "footerHonorText" || field === "footerShareText" ? 3 : 2} value={header[field]} onChange={(event) => { setHeader((current) => ({ ...current, [field]: event.target.value })); setSaved(false); }} className="mt-2 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm" />
+                      <textarea id={`header-${field}`} placeholder={examples[field]} rows={field === "footerHonorText" || field === "footerShareText" ? 3 : 2} value={header[field]} onChange={(event) => { setHeader((current) => ({ ...current, [field]: event.target.value })); setSaved(false); }} className="mt-2 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm" />
                     ) : (
-                      <input value={header[field]} onChange={(event) => { setHeader((current) => ({ ...current, [field]: event.target.value })); setSaved(false); }} className="mt-2 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm" />
+                      <input id={`header-${field}`} placeholder={examples[field]} value={header[field]} onChange={(event) => { setHeader((current) => ({ ...current, [field]: event.target.value })); setSaved(false); }} className="mt-2 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm" />
                     )}
-                  </label>
+                    <AdminFieldActions
+                      fieldLabel={label}
+                      example={examples[field]}
+                      onClear={() => { setHeader((current) => ({ ...current, [field]: "" })); setSaved(false); }}
+                      onUseExample={() => { setHeader((current) => ({ ...current, [field]: examples[field] })); setSaved(false); }}
+                    />
+                  </div>
                 </div>
               ))}
               <label className="flex items-center gap-3 rounded-xl border border-[#D4AF37]/20 p-4 text-sm text-[color:var(--text-primary)]">

@@ -6,6 +6,7 @@ import { ArrowLeft, Check, Save } from "lucide-react";
 import { AnimatedGradient } from "@/components/motion/AnimatedGradient";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { Button } from "@/components/ui/Button";
+import { AdminFieldActions } from "@/components/admin/AdminFieldActions";
 import { invitationData } from "@/lib/defaults";
 import { fetchGift, updateGift } from "@/lib/api";
 import type { GiftAccount, GiftInfo } from "@/types/invitation";
@@ -20,6 +21,21 @@ const fields: Array<[GiftTextField, string]> = [
   ["thankYou", "Ucapan terima kasih"],
   ["closingArabic", "Penutup Arab"],
 ];
+
+const examples: Record<GiftTextField, string> = {
+  sectionLabel: "Tanda Kasih",
+  title: "Kirim Hadiah",
+  description: "Doa restu Anda merupakan hadiah terindah bagi kami. Namun, jika ingin berbagi tanda kasih, silakan gunakan informasi berikut.",
+  bankName: "Bank BCA",
+  accountHolder: "Nurpalah Setiawan",
+  accountNumber: "1234567890",
+  ewalletName: "GoPay",
+  ewalletHolder: "Nurpalah Setiawan",
+  ewalletNumber: "081234567890",
+  address: "Jl. Contoh No. 123, Jakarta Selatan",
+  thankYou: "Terima kasih atas doa dan tanda kasih yang Anda berikan. Semoga kebaikan Anda dibalas dengan keberkahan.",
+  closingArabic: "جَزَاكُمُ اللَّهُ خَيْرًا",
+};
 
 export default function GiftAdminPage() {
   const [gift, setGift] = useState<GiftInfo>(invitationData.gift);
@@ -77,14 +93,22 @@ export default function GiftAdminPage() {
           <div className="card-glass rounded-3xl border border-[#D4AF37]/15 p-6 sm:p-8">
             <div className="flex flex-col gap-4">
               {fields.map(([field, label]) => (
-                <label key={field} className="text-sm text-[color:var(--text-primary)]">
-                  {label}
+                <div key={field}>
+                  <label htmlFor={`gift-${field}`} className="text-sm text-[color:var(--text-primary)]">
+                    {label}
+                  </label>
                   {field === "description" || field === "thankYou" || field === "closingArabic" ? (
-                    <textarea rows={field === "description" ? 4 : 2} value={gift[field]} onChange={(event) => { setGift((current) => ({ ...current, [field]: event.target.value })); setSaved(false); }} className="mt-2 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm" />
+                    <textarea id={`gift-${field}`} placeholder={examples[field]} rows={field === "description" ? 4 : 2} value={gift[field]} onChange={(event) => { setGift((current) => ({ ...current, [field]: event.target.value })); setSaved(false); }} className="mt-2 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm" />
                   ) : (
-                    <input value={gift[field]} onChange={(event) => { setGift((current) => ({ ...current, [field]: event.target.value })); setSaved(false); }} className="mt-2 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm" />
+                    <input id={`gift-${field}`} placeholder={examples[field]} value={gift[field]} onChange={(event) => { setGift((current) => ({ ...current, [field]: event.target.value })); setSaved(false); }} className="mt-2 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm" />
                   )}
-                </label>
+                  <AdminFieldActions
+                    fieldLabel={label}
+                    example={examples[field]}
+                    onClear={() => { setGift((current) => ({ ...current, [field]: "" })); setSaved(false); }}
+                    onUseExample={() => { setGift((current) => ({ ...current, [field]: examples[field] })); setSaved(false); }}
+                  />
+                </div>
               ))}
               <div className="mt-3 flex flex-col gap-4">
                 <div>
@@ -118,14 +142,46 @@ export default function GiftAdminPage() {
                       ["holder", "Nama pemilik"],
                       ["number", "Nomor rekening / e-wallet"],
                     ] as Array<[keyof GiftAccount, string]>).map(([field, label]) => (
-                      <label key={field} className="mt-3 block text-sm text-[color:var(--text-primary)]">
-                        {label}
+                      <div key={field} className="mt-3">
+                        <label htmlFor={`gift-account-${index}-${field}`} className="block text-sm text-[color:var(--text-primary)]">
+                          {label}
+                        </label>
                         <input
+                          id={`gift-account-${index}-${field}`}
                           value={account[field]}
+                          placeholder={
+                            field === "label"
+                              ? "Bank BCA / GoPay"
+                              : field === "holder"
+                                ? "Nurpalah Setiawan"
+                                : "1234567890"
+                          }
                           onChange={(event) => updateAccount(index, field, event.target.value)}
                           className="mt-2 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm"
                         />
-                      </label>
+                        <AdminFieldActions
+                          fieldLabel={label}
+                          example={
+                            field === "label"
+                              ? "Bank BCA / GoPay"
+                              : field === "holder"
+                                ? "Nurpalah Setiawan"
+                                : "1234567890"
+                          }
+                          onClear={() => updateAccount(index, field, "")}
+                          onUseExample={() =>
+                            updateAccount(
+                              index,
+                              field,
+                              field === "label"
+                                ? "Bank BCA"
+                                : field === "holder"
+                                  ? "Nurpalah Setiawan"
+                                  : "1234567890"
+                            )
+                          }
+                        />
+                      </div>
                     ))}
                   </div>
                 ))}

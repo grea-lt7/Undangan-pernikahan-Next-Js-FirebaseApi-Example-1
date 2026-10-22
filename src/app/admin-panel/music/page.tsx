@@ -6,6 +6,7 @@ import { ArrowLeft, Check, Save } from "lucide-react";
 import { AnimatedGradient } from "@/components/motion/AnimatedGradient";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { Button } from "@/components/ui/Button";
+import { AdminFieldActions } from "@/components/admin/AdminFieldActions";
 import { invitationData } from "@/lib/defaults";
 import { fetchMusic, updateMusic } from "@/lib/api";
 import type { MusicSettings } from "@/types/invitation";
@@ -56,10 +57,18 @@ export default function MusicAdminPage() {
           <p className="text-sm text-[color:var(--text-muted)]">Memuat musik...</p>
         ) : (
           <div className="card-glass rounded-3xl border border-[#D4AF37]/15 p-6 sm:p-8">
-            <label className="text-sm text-[color:var(--text-primary)]">
-              Link lagu
-              <input value={music.src} onChange={(event) => { setMusic((current) => ({ ...current, src: event.target.value })); setSaved(false); }} placeholder="https://..." className="mt-2 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm" />
-            </label>
+            <div>
+              <label htmlFor="music-src" className="text-sm text-[color:var(--text-primary)]">
+                Link lagu
+              </label>
+              <input id="music-src" value={music.src} onChange={(event) => { setMusic((current) => ({ ...current, src: event.target.value })); setSaved(false); }} placeholder="https://example.com/audio/lagu-pernikahan.mp3" className="mt-2 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm" />
+              <AdminFieldActions
+                fieldLabel="link lagu"
+                example="https://example.com/audio/lagu-pernikahan.mp3"
+                onClear={() => { setMusic((current) => ({ ...current, src: "" })); setSaved(false); }}
+                onUseExample={() => { setMusic((current) => ({ ...current, src: "https://example.com/audio/lagu-pernikahan.mp3" })); setSaved(false); }}
+              />
+            </div>
             <label className="mt-5 flex cursor-pointer items-center gap-3 text-sm text-[color:var(--text-primary)]">
               <input type="checkbox" checked={music.autoplay} onChange={(event) => { setMusic((current) => ({ ...current, autoplay: event.target.checked })); setSaved(false); }} className="h-4 w-4 accent-[#D4AF37]" />
               Aktifkan autoplay

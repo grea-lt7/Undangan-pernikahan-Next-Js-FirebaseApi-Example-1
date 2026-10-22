@@ -1,5 +1,4 @@
 const ADMIN_SESSION_KEY = "admin-authenticated";
-const DEFAULT_PASSWORD = "Admin321";
 
 async function hashPassword(password: string): Promise<string> {
   const data = new TextEncoder().encode(password);
@@ -22,7 +21,7 @@ export async function verifyAdminPassword(
   password: string,
   storedHash: string | null
 ): Promise<boolean> {
-  return (await hashPassword(password)) === (storedHash ?? await hashPassword(DEFAULT_PASSWORD));
+  return Boolean(storedHash) && (await hashPassword(password)) === storedHash;
 }
 
 export async function getAdminPasswordHash(): Promise<string | null> {
@@ -36,17 +35,19 @@ export async function getAdminPasswordHash(): Promise<string | null> {
   return (await response.json()) as string | null;
 }
 
-export async function saveAdminPassword(password: string): Promise<void> {
+export async function saveAdminPassword(password: string): Promise<string> {
   const { FIREBASE_DATABASE_URL } = await import("@/lib/constants");
   if (!FIREBASE_DATABASE_URL) throw new Error("Firebase belum dikonfigurasi.");
+  const passwordHash = await hashPassword(password);
   const response = await fetch(
     `${FIREBASE_DATABASE_URL.replace(/\/+$/, "")}/adminAuth/passwordHash.json`,
     {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(await hashPassword(password)),
+      body: JSON.stringify(passwordHash),
       signal: AbortSignal.timeout(20_000),
     }
   );
   if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal menyimpan sandi admin`);
+  return passwordHash;
 }

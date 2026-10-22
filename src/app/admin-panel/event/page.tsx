@@ -6,6 +6,7 @@ import { ArrowLeft, Check, Save } from "lucide-react";
 import { AnimatedGradient } from "@/components/motion/AnimatedGradient";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { Button } from "@/components/ui/Button";
+import { AdminFieldActions } from "@/components/admin/AdminFieldActions";
 import { invitationData } from "@/lib/defaults";
 import { fetchEvent, updateEvent } from "@/lib/api";
 import type { EventDetail, EventInfo } from "@/types/invitation";
@@ -22,6 +23,20 @@ const fields: Array<[keyof EventDetail, string]> = [
   ["mapsUrl", "Link Google Maps"],
   ["mapsLabel", "Label Google Maps"],
 ];
+
+const examples: Record<keyof EventDetail, string> = {
+  name: "Akad Nikah",
+  date: "2026-10-04",
+  day: "Minggu",
+  lunarDate: "12 Rabiul Akhir 1448 H",
+  time: "08:00 - 10:00 WIB",
+  venue: "Gedung Serbaguna",
+  address: "Jl. Contoh No. 123",
+  city: "Jakarta Selatan",
+  mapsUrl: "https://maps.google.com/?q=Gedung+Serbaguna",
+  mapsLabel: "Lihat lokasi di Google Maps",
+  mapsEnabled: "Aktif",
+};
 
 export default function EventAdminPage() {
   const [event, setEvent] = useState<EventInfo>(invitationData.event);
@@ -124,10 +139,15 @@ export default function EventAdminPage() {
                 </div>
                 <div className="flex flex-col gap-4">
                   {fields.map(([field, label]) => (
-                    <label key={field} className="text-sm text-[color:var(--text-primary)]">
-                      {label}
+                    <div key={field}>
+                      <label htmlFor={`event-${eventIndex}-${field}`} className="text-sm text-[color:var(--text-primary)]">
+                        {label}
+                      </label>
                       <input
+                        id={`event-${eventIndex}-${field}`}
                         type={field === "date" ? "date" : "text"}
+                        placeholder={examples[field]}
+                        title={field === "date" ? `Contoh tanggal: ${examples[field]}` : undefined}
                         value={
                           typeof eventDetail[field] === "string"
                             ? eventDetail[field]
@@ -143,7 +163,27 @@ export default function EventAdminPage() {
                         }}
                         className="mt-2 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm"
                       />
-                    </label>
+                      <AdminFieldActions
+                        fieldLabel={label}
+                        example={examples[field]}
+                        onClear={() => {
+                          setEvent((current) => ({
+                            events: current.events.map((detail, index) =>
+                              index === eventIndex ? { ...detail, [field]: "" } : detail
+                            ),
+                          }));
+                          setSaved(false);
+                        }}
+                        onUseExample={() => {
+                          setEvent((current) => ({
+                            events: current.events.map((detail, index) =>
+                              index === eventIndex ? { ...detail, [field]: examples[field] } : detail
+                            ),
+                          }));
+                          setSaved(false);
+                        }}
+                      />
+                    </div>
                   ))}
                   <label className="flex items-center gap-3 rounded-xl border border-[#D4AF37]/20 px-4 py-3 text-sm text-[color:var(--text-primary)]">
                     <input

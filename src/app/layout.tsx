@@ -20,19 +20,19 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Pernikahan Andi Jamaludin & Siti Purijat",
+  title: "Pernikahan Nurpalah Setiawan & Irma Suryaningsih",
   description:
-    "Dengan penuh kebahagiaan, kami mengundang Anda untuk menyaksikan dan memberikan doa restu atas pernikahan Andi Jamaludin &  Siti Purijat",
+    "Dengan penuh kebahagiaan, kami mengundang Anda untuk menyaksikan dan memberikan doa restu atas pernikahan Nurpalah Setiawan & Irma Suryaningsih",
   keywords: [
     "pernikahan",
     "wedding",
-    "Andi Jamaludin",
-    " Siti Purijat",
+    "Nurpalah Setiawan",
+    "Irma Suryaningsih",
     "undangan digital",
-    "#AndiJamaludin2026",
+    "#NurpalahIrma2026",
   ],
-  authors: [{ name: "Andi & Siti" }],
-  creator: "Andi & Siti",
+  authors: [{ name: "Nurpalah Setiawan & Irma Suryaningsih" }],
+  creator: "Nurpalah Setiawan & Irma Suryaningsih",
   metadataBase: new URL(SITE_URL),
   alternates: {
     canonical: SITE_URL,
@@ -51,23 +51,23 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: SITE_URL,
-    title: "Pernikahan Andi & Siti — ",
+    title: "Pernikahan Nurpalah Setiawan & Irma Suryaningsih — ",
     description:
       "Kami mengundang Anda untuk menyaksikan dan memberikan doa restu atas pernikahan kami. ",
-    siteName: "Undangan Pernikahan Andi & Siti",
+    siteName: "Undangan Pernikahan Nurpalah Setiawan & Irma Suryaningsih",
     locale: "id_ID",
     images: [
       {
         url: `${SITE_URL}/images/og-image.png`,
         width: 1200,
         height: 630,
-        alt: "Pernikahan Andi Jamaludin &  Siti Purijat",
+        alt: "Pernikahan Nurpalah Setiawan & Irma Suryaningsih",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pernikahan Andi & Siti — ",
+    title: "Pernikahan Nurpalah Setiawan & Irma Suryaningsih — ",
     description:
       "Kami mengundang Anda untuk menyaksikan momen bahagia kami.",
     images: [`${SITE_URL}/images/og-image.png`],

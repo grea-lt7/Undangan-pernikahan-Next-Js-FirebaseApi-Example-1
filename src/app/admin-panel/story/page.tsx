@@ -6,6 +6,7 @@ import { ArrowLeft, Check, Plus, Save, Trash2 } from "lucide-react";
 import { AnimatedGradient } from "@/components/motion/AnimatedGradient";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { Button } from "@/components/ui/Button";
+import { AdminFieldActions } from "@/components/admin/AdminFieldActions";
 import { invitationData } from "@/lib/defaults";
 import {
   fetchStory,
@@ -14,6 +15,13 @@ import {
   updateStoryVisibility,
 } from "@/lib/api";
 import type { StoryItem } from "@/types/invitation";
+
+const examples: StoryItem = {
+  year: "2022",
+  title: "Pertama kali bertemu",
+  description:
+    "Kami bertemu di sebuah acara keluarga. Dari pertemuan sederhana itu, kami mulai mengenal satu sama lain dan berkomitmen membangun masa depan bersama.",
+};
 
 export default function StoryAdminPage() {
   const [story, setStory] = useState<StoryItem[]>(invitationData.story);
@@ -92,10 +100,17 @@ export default function StoryAdminPage() {
               <article key={`${index}-${item.year}`} className="card-glass rounded-3xl border border-[#D4AF37]/15 p-6 shadow-[0_4px_32px_rgba(212,175,55,0.08)]">
                 <h2 className="mb-4 font-serif text-xl font-semibold text-[color:var(--text-primary)]">Cerita {index + 1}</h2>
                 <div className="grid gap-4 sm:grid-cols-[120px_1fr]">
-                  <input value={item.year} onChange={(event) => updateItem(index, "year", event.target.value)} placeholder="Tahun" className="rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm text-[color:var(--text-primary)]" />
-                  <input value={item.title} onChange={(event) => updateItem(index, "title", event.target.value)} placeholder="Judul cerita" className="rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm text-[color:var(--text-primary)]" />
+                  <div>
+                    <input aria-label={`Tahun cerita ${index + 1}`} value={item.year} onChange={(event) => updateItem(index, "year", event.target.value)} placeholder={`Contoh: ${examples.year}`} className="w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm text-[color:var(--text-primary)]" />
+                    <AdminFieldActions fieldLabel={`tahun cerita ${index + 1}`} example={examples.year} onClear={() => updateItem(index, "year", "")} onUseExample={() => updateItem(index, "year", examples.year)} />
+                  </div>
+                  <div>
+                    <input aria-label={`Judul cerita ${index + 1}`} value={item.title} onChange={(event) => updateItem(index, "title", event.target.value)} placeholder={`Contoh: ${examples.title}`} className="w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm text-[color:var(--text-primary)]" />
+                    <AdminFieldActions fieldLabel={`judul cerita ${index + 1}`} example={examples.title} onClear={() => updateItem(index, "title", "")} onUseExample={() => updateItem(index, "title", examples.title)} />
+                  </div>
                 </div>
-                <textarea value={item.description} onChange={(event) => updateItem(index, "description", event.target.value)} placeholder="Deskripsi cerita" rows={4} className="mt-4 w-full resize-y rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm text-[color:var(--text-primary)]" />
+                <textarea aria-label={`Deskripsi cerita ${index + 1}`} value={item.description} onChange={(event) => updateItem(index, "description", event.target.value)} placeholder={`Contoh: ${examples.description}`} rows={4} className="mt-4 w-full resize-y rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm text-[color:var(--text-primary)]" />
+                <AdminFieldActions fieldLabel={`deskripsi cerita ${index + 1}`} example={examples.description} onClear={() => updateItem(index, "description", "")} onUseExample={() => updateItem(index, "description", examples.description)} />
                 <Button type="button" variant="ghost" size="sm" className="mt-3" onClick={() => setStory((current) => current.filter((_, itemIndex) => itemIndex !== index))}>
                   <Trash2 className="h-4 w-4" aria-hidden /> Hapus cerita
                 </Button>

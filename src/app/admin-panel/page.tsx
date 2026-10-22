@@ -18,6 +18,7 @@ import {
 import { AnimatedGradient } from "@/components/motion/AnimatedGradient";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { Button } from "@/components/ui/Button";
+import { AdminFieldActions } from "@/components/admin/AdminFieldActions";
 import { invitationData } from "@/lib/defaults";
 import { copyToClipboard } from "@/lib/utils";
 import {
@@ -385,8 +386,14 @@ export default function AdminPage() {
               onKeyDown={(event) => {
                 if (event.key === "Enter") generateLink();
               }}
-              placeholder="Contoh: Bapak Ahmad"
+              placeholder="Contoh: Bapak Ahmad dan Ibu Aminah"
               className="mt-3 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm text-[color:var(--text-primary)] placeholder:text-[color:var(--text-muted)] focus:border-[#D4AF37] focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30"
+            />
+            <AdminFieldActions
+              fieldLabel="nama tamu"
+              example="Bapak Ahmad dan Ibu Aminah"
+              onClear={() => { setName(""); setGeneratedUrl(""); }}
+              onUseExample={() => { setName("Bapak Ahmad dan Ibu Aminah"); setGeneratedUrl(""); }}
             />
 
             <Button
@@ -544,8 +551,15 @@ export default function AdminPage() {
                   value={shareMessageDraft}
                   onChange={(event) => setShareMessageDraft(event.target.value)}
                   rows={10}
+                  placeholder={`*UNDANGAN PERNIKAHAN*\n\nYth. {recipientName}\n\nDengan hormat, kami mengundang Anda untuk menghadiri acara pernikahan kami.\n\nInformasi lengkap dan tautan undangan:\n{url}\n\nTerima kasih atas doa restunya.\n\nHormat kami,\n{coupleName}`}
                   className="mt-5 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm leading-relaxed text-[color:var(--text-primary)] focus:border-[#D4AF37] focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30"
                   aria-label="Template teks share"
+                />
+                <AdminFieldActions
+                  fieldLabel="template teks share"
+                  example={DEFAULT_SHARE_MESSAGE_TEMPLATE}
+                  onClear={() => setShareMessageDraft("")}
+                  onUseExample={() => setShareMessageDraft(DEFAULT_SHARE_MESSAGE_TEMPLATE)}
                 />
                 <div className="mt-3 flex flex-wrap gap-2">
                   <span className="self-center text-xs text-[color:var(--text-muted)]">

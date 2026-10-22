@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 
 export function AdminAuthGate({ children }: { children: React.ReactNode }) {
   const [authenticated, setAuthenticated] = useState(false);
-  const [passwordHash, setPasswordHash] = useState<string | null>(null);
+  const [passwordHash, setPasswordHash] = useState<string | null | undefined>(undefined);
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,13 +18,15 @@ export function AdminAuthGate({ children }: { children: React.ReactNode }) {
   const [showNewPassword, setShowNewPassword] = useState(false);
 
   useEffect(() => {
-    if (!isAdminAuthenticated()) {
-      setLoading(false);
-      return;
-    }
     getAdminPasswordHash()
-      .then(setPasswordHash)
-      .then(() => setAuthenticated(true))
+      .then((hash) => {
+        setPasswordHash(hash);
+        if (!hash) {
+          setAdminAuthenticated(false);
+          return;
+        }
+        if (isAdminAuthenticated()) setAuthenticated(true);
+      })
       .catch((err) => setError(err instanceof Error ? err.message : "Gagal memuat autentikasi."))
       .finally(() => setLoading(false));
   }, []);
@@ -70,8 +72,48 @@ export function AdminAuthGate({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function createPassword(event: FormEvent) {
+    event.preventDefault();
+    if (newPassword.length < 6) {
+      setError("Sandi baru minimal 6 karakter.");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      const hash = await saveAdminPassword(newPassword);
+      setPasswordHash(hash);
+      setNewPassword("");
+      setAdminAuthenticated(true);
+      setAuthenticated(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal membuat sandi admin.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (loading) return <div className="min-h-screen" />;
   if (!authenticated) {
+    if (passwordHash === null || passwordHash === "") {
+      return (
+        <main className="flex min-h-screen items-center justify-center px-4">
+          <form onSubmit={createPassword} className="card-glass w-full max-w-md rounded-3xl border border-[#D4AF37]/15 p-6 sm:p-8">
+            <LockKeyhole className="mb-4 h-8 w-8 text-[#D4AF37]" aria-hidden />
+            <h1 className="font-serif text-3xl font-bold gold-text">Buat Sandi Admin</h1>
+            <p className="mt-2 text-sm text-[color:var(--text-secondary)]">Belum ada sandi admin. Buat sandi baru untuk melanjutkan.</p>
+            <div className="relative mt-5">
+              <input type={showNewPassword ? "text" : "password"} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} className="w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 pr-12" placeholder="Sandi baru (minimal 6 karakter)" autoFocus />
+              <button type="button" onClick={() => setShowNewPassword((current) => !current)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--text-muted)] hover:text-[#D4AF37]" aria-label={showNewPassword ? "Sembunyikan sandi" : "Tampilkan sandi"}>
+                {showNewPassword ? <EyeOff className="h-4 w-4" aria-hidden /> : <Eye className="h-4 w-4" aria-hidden />}
+              </button>
+            </div>
+            <Button type="submit" className="mt-4 w-full justify-center" loading={saving}>Buat Sandi</Button>
+            {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
+          </form>
+        </main>
+      );
+    }
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
         <form onSubmit={login} className="card-glass w-full max-w-md rounded-3xl border border-[#D4AF37]/15 p-6 sm:p-8">

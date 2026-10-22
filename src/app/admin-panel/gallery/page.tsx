@@ -6,12 +6,15 @@ import { ArrowLeft, Check, Plus, Save, Trash2 } from "lucide-react";
 import { AnimatedGradient } from "@/components/motion/AnimatedGradient";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { Button } from "@/components/ui/Button";
+import { AdminFieldActions } from "@/components/admin/AdminFieldActions";
 import { invitationData } from "@/lib/defaults";
 import { fetchGallery, updateGallery } from "@/lib/api";
 import { normalizeGalleryUrl } from "@/lib/gallery";
 import type { GalleryImage } from "@/types/invitation";
 
 const DEFAULT_IMAGE_DIMENSION = { width: 800, height: 600 };
+const EXAMPLE_IMAGE_URL = "https://drive.google.com/file/d/1AbCdEfGhIjKlMnOpQrStUvWxYz/view";
+const EXAMPLE_IMAGE_ALT = "Foto bersama keluarga di hari pernikahan";
 
 function getAutoImageDimensions(src: string) {
   if (!src) {
@@ -159,8 +162,10 @@ export default function GalleryAdminPage() {
                     <Trash2 className="h-4 w-4" aria-hidden /> Hapus
                   </Button>
                 </div>
-                <input value={image.src} onChange={(event) => updateItem(index, "src", event.target.value)} placeholder="https://drive.google.com/file/d/..." className="mt-4 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm text-[color:var(--text-primary)]" />
-                <input value={image.alt} onChange={(event) => updateItem(index, "alt", event.target.value)} placeholder="Deskripsi foto" className="mt-3 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm text-[color:var(--text-primary)]" />
+                <input aria-label={`Link foto ${index + 1}`} value={image.src} onChange={(event) => updateItem(index, "src", event.target.value)} placeholder={EXAMPLE_IMAGE_URL} className="mt-4 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm text-[color:var(--text-primary)]" />
+                <AdminFieldActions fieldLabel={`link foto ${index + 1}`} example={EXAMPLE_IMAGE_URL} onClear={() => updateItem(index, "src", "")} onUseExample={() => updateItem(index, "src", EXAMPLE_IMAGE_URL)} />
+                <input aria-label={`Deskripsi foto ${index + 1}`} value={image.alt} onChange={(event) => updateItem(index, "alt", event.target.value)} placeholder={`Contoh: ${EXAMPLE_IMAGE_ALT}`} className="mt-3 w-full rounded-xl border border-[#D4AF37]/30 bg-transparent px-4 py-3 text-sm text-[color:var(--text-primary)]" />
+                <AdminFieldActions fieldLabel={`deskripsi foto ${index + 1}`} example={EXAMPLE_IMAGE_ALT} onClear={() => updateItem(index, "alt", "")} onUseExample={() => updateItem(index, "alt", EXAMPLE_IMAGE_ALT)} />
                 <div className="mt-3 rounded-xl border border-[#D4AF37]/20 bg-[#D4AF37]/5 px-4 py-3 text-sm text-[color:var(--text-secondary)]">
                   Ukuran otomatis: {image.width > 0 && image.height > 0 ? `${image.width} × ${image.height}` : "Sedang mendeteksi..."}
                 </div>

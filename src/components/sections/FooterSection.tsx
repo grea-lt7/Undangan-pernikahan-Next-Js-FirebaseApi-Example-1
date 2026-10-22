@@ -7,8 +7,6 @@ import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { invitationData } from "@/lib/defaults";
 import {
   deleteShare,
-  fetchCoHosts,
-  fetchCoHostsTitleMode,
   fetchGuest,
   fetchHeader,
   guestSlug,
@@ -23,8 +21,6 @@ function getCurrentGuestName(): string {
 
 export function FooterSection() {
   const [header, setHeader] = useState<HeaderContent>(invitationData.header);
-  const [coHosts, setCoHosts] = useState<string[]>([]);
-  const [coHostsTitleMode, setCoHostsTitleMode] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [shareName, setShareName] = useState("");
   const [shareError, setShareError] = useState("");
@@ -46,15 +42,6 @@ export function FooterSection() {
         if (remoteHeader) setHeader({ ...invitationData.header, ...remoteHeader });
       })
       .catch((error) => console.error("Gagal memuat footer dari Firebase:", error));
-  }, []);
-
-  useEffect(() => {
-    Promise.all([fetchCoHosts(), fetchCoHostsTitleMode()])
-      .then(([value, titleMode]) => {
-        setCoHosts(value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean));
-        setCoHostsTitleMode(titleMode);
-      })
-      .catch((error) => console.error("Gagal memuat daftar turut mengundang:", error));
   }, []);
 
   useEffect(() => {
@@ -146,47 +133,20 @@ export function FooterSection() {
           <GoldShimmerText
             text={header.groomName}
             as="p"
-            size="xl"
-            className="leading-tight"
+            size="lg"
+            className="max-w-full break-words text-[clamp(1.5rem,7vw,2.5rem)] leading-tight"
           />
           <p className="font-serif text-xl italic text-[#D4AF37]">&amp;</p>
           <GoldShimmerText
             text={header.brideName}
             as="p"
-            size="xl"
-            className="leading-tight"
+            size="lg"
+            className="max-w-full break-words text-[clamp(1.5rem,7vw,2.5rem)] leading-tight"
           />
           <p className="mt-2 font-sans text-sm text-[color:var(--text-muted)] tracking-wider">
             {header.hashtag}
           </p>
         </div>
-
-        {coHosts.length > 0 && (
-          <div className="card-glass w-full max-w-xl rounded-2xl border border-[#D4AF37]/20 px-5 py-6 sm:px-8">
-            <h2 className="font-serif text-lg font-semibold text-[#D4AF37]">
-              Turut Mengundang
-            </h2>
-            <div className="mt-4 flex flex-col gap-2">
-              {coHosts.map((line, index) => {
-                const title = line.match(/^\*\*(.+)\*\*$/)?.[1]?.trim();
-                const text = title ?? line.replace(/\*\*/g, "");
-
-                return (
-                  <p
-                    key={`${index}-${line}`}
-                    className={
-                      coHostsTitleMode && title
-                        ? "font-serif text-xs font-semibold leading-relaxed text-[#D4AF37] sm:text-sm"
-                        : "font-serif text-sm leading-relaxed text-[color:var(--text-primary)] sm:text-base"
-                    }
-                  >
-                    {text}
-                  </p>
-                );
-              })}
-            </div>
-          </div>
-        )}
 
         <div className="gold-divider w-full" aria-hidden />
 

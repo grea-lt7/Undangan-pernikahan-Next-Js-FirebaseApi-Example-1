@@ -10,6 +10,7 @@ import { StorySection } from "@/components/sections/StorySection";
 import { RsvpSection } from "@/components/sections/RsvpSection";
 import { GiftSection } from "@/components/sections/GiftSection";
 import { FooterSection } from "@/components/sections/FooterSection";
+import { CoHostsSection } from "@/components/sections/CoHostsSection";
 import { FloatingNavigation } from "@/components/FloatingNavigation";
 import { MusicPlayer } from "@/components/MusicPlayer";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -101,6 +102,8 @@ export default function WeddingPage() {
         return <GiftSection key={id} />;
       case "rsvp":
         return <RsvpSection key={id} />;
+      case "coHosts":
+        return <CoHostsSection key={id} />;
       case "footer":
         return <FooterSection key={id} />;
     }

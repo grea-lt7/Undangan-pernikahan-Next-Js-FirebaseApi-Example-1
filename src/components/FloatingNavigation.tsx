@@ -17,6 +17,7 @@ const navItems: NavItem[] = [
   { id: "story", label: "Cerita" },
   { id: "gift", label: "Hadiah" },
   { id: "rsvp", label: "RSVP" },
+  { id: "coHosts", label: "Turut Mengundang" },
 ];
 
 export function FloatingNavigation({

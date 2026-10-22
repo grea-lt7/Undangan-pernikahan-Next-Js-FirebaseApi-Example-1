@@ -6,6 +6,7 @@ export const INVITATION_SECTION_IDS = [
   "story",
   "gift",
   "rsvp",
+  "coHosts",
   "footer",
 ] as const;
 
@@ -20,6 +21,7 @@ export const INVITATION_SECTION_LABELS: Record<
   story: "Cerita Cinta",
   gift: "Wedding Gift",
   rsvp: "RSVP dan Komentar",
+  coHosts: "Turut Mengundang",
   footer: "Footer / Bagikan Undangan",
 };
 
@@ -44,6 +46,7 @@ export const DEFAULT_SECTION_SETTINGS: InvitationSectionSettings = {
     story: true,
     gift: true,
     rsvp: true,
+    coHosts: true,
     footer: true,
     opening: true,
     music: true,

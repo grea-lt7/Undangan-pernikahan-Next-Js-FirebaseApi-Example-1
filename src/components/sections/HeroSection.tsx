@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { StaggerText } from "@/components/motion/StaggerText";
 import { FloatingParticles } from "@/components/motion/FloatingParticles";
 import { AnimatedGradient } from "@/components/motion/AnimatedGradient";
 import { Reveal } from "@/components/motion/Reveal";
@@ -53,7 +52,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.1, delay: 0.4, ease: [0.19, 1, 0.22, 1] }}
-            className="gold-shimmer-text font-serif text-5xl font-bold leading-tight tracking-wide sm:text-6xl md:text-7xl lg:text-8xl"
+            className="gold-shimmer-text max-w-full break-words px-2 font-serif text-[clamp(2rem,9vw,3.5rem)] font-bold leading-tight tracking-normal sm:text-6xl sm:tracking-wide md:text-7xl lg:text-8xl"
           >
             {header.groomName}
           </motion.h1>
@@ -72,7 +71,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: -40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.1, delay: 0.5, ease: [0.19, 1, 0.22, 1] }}
-            className="gold-shimmer-text font-serif text-5xl font-bold leading-tight tracking-wide sm:text-6xl md:text-7xl lg:text-8xl"
+            className="gold-shimmer-text max-w-full break-words px-2 font-serif text-[clamp(2rem,9vw,3.5rem)] font-bold leading-tight tracking-normal sm:text-6xl sm:tracking-wide md:text-7xl lg:text-8xl"
           >
             {header.brideName}
           </motion.h1>

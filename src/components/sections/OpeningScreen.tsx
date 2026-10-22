@@ -106,7 +106,7 @@ export function OpeningScreen({ guestName, onOpen }: OpeningScreenProps) {
                   src={image}
                   alt=""
                   className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
-                    index === activeImage ? "opacity-75" : "opacity-0"
+                    index === activeImage ? "opacity-90" : "opacity-0"
                   }`}
                 />
               ))}
@@ -115,16 +115,16 @@ export function OpeningScreen({ guestName, onOpen }: OpeningScreenProps) {
                 style={{
                   background:
                     resolvedTheme === "dark"
-                      ? "rgba(11, 10, 8, 0.48)"
-                      : "rgba(255, 248, 231, 0.18)",
+                      ? "rgba(11, 10, 8, 0.24)"
+                      : "rgba(255, 248, 231, 0.12)",
                 }}
               />
             </div>
           )}
 
           <div className="relative z-10 max-h-[calc(100vh-5rem)] overflow-y-auto px-4 py-4">
-            <div className="rounded-3xl border border-white/25 bg-white/10 p-3 shadow-[0_4px_32px_rgba(0,0,0,0.16)] backdrop-blur-xl sm:p-4 dark:border-white/15 dark:bg-black/20">
-              <div className="flex flex-col items-center gap-7 rounded-2xl border border-white/20 bg-white/10 px-5 py-8 text-center shadow-inner backdrop-blur-2xl sm:px-8 dark:border-white/10 dark:bg-black/15">
+            <div className="rounded-3xl border border-white/15 bg-transparent p-3 shadow-[0_4px_32px_rgba(0,0,0,0.06)] sm:p-4">
+              <div className="flex flex-col items-center gap-7 rounded-2xl border border-white/25 bg-white/30 px-5 py-8 text-center shadow-[0_4px_24px_rgba(0,0,0,0.14)] sm:px-8 dark:border-white/20 dark:bg-black/35">
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -208,7 +208,7 @@ export function OpeningScreen({ guestName, onOpen }: OpeningScreenProps) {
             >
               <motion.button
                 onClick={handleOpen}
-                className="group relative overflow-hidden rounded-full bg-[#D4AF37] px-10 py-4 font-sans text-sm font-semibold text-[#2A1E12] shadow-[0_8px_32px_rgba(212,175,55,0.4)]"
+                className="group relative overflow-hidden rounded-full border border-[#D4AF37]/70 bg-[#D4AF37]/90 px-10 py-4 font-sans text-sm font-semibold text-[#2A1E12] shadow-[0_6px_24px_rgba(212,175,55,0.28)]"
                 whileHover={{
                   scale: 1.04,
                   boxShadow: "0 12px 40px rgba(212,175,55,0.55)",

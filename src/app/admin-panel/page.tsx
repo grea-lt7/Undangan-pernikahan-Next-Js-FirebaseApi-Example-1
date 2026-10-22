@@ -302,10 +302,10 @@ export default function AdminPage() {
             />
           </button>
           <div
-            className={`grid gap-3 overflow-hidden transition-[max-height,opacity] duration-300 sm:grid-cols-2 sm:opacity-100 ${
+            className={`grid gap-3 overflow-x-hidden overscroll-contain transition-[max-height,opacity] duration-300 sm:grid-cols-2 sm:overflow-visible sm:opacity-100 ${
               showAdminMenu
-                ? "mt-3 max-h-[32rem] opacity-100"
-                : "max-h-0 opacity-0 sm:mt-0 sm:max-h-none"
+                ? "mt-3 max-h-[80dvh] overflow-y-auto opacity-100"
+                : "max-h-0 overflow-y-hidden opacity-0 sm:mt-0 sm:max-h-none"
             }`}
           >
             {[
